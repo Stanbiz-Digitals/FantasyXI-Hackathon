@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { WalletProvider } from "@/context/WalletContext";
+import { ZcashProviders } from "@/components/providers/ZcashProviders";
 import { ToastProvider } from "@/context/ToastContext";
 import { AppShell } from "@/components/layout/AppShell";
 import { TelemetryProvider } from "@/components/layout/TelemetryProvider";
@@ -53,11 +54,13 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#f8fafc] text-slate-800 font-sans selection:bg-[#37003c] selection:text-white">
         <AuthProvider>
           <WalletProvider>
-            <ToastProvider>
-              <TelemetryProvider>
-                <AppShell>{children}</AppShell>
-              </TelemetryProvider>
-            </ToastProvider>
+            <ZcashProviders>
+              <ToastProvider>
+                <TelemetryProvider>
+                  <AppShell>{children}</AppShell>
+                </TelemetryProvider>
+              </ToastProvider>
+            </ZcashProviders>
           </WalletProvider>
         </AuthProvider>
       </body>

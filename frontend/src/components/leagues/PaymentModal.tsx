@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/Icons";
 import { depositToSorobanEscrow, SorobanDepositTimeoutError } from "@/lib/stellar/sorobanDeposit";
 import { mapDepositErrorToMessage } from "@/lib/stellar/depositErrorMessage";
+import { ZcashPaymentTab } from "./ZcashPaymentTab";
 
 export interface PaymentModalProps {
   isOpen: boolean;
@@ -91,6 +92,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const [manualTxHash, setManualTxHash] = useState<string>("");
   const [manualAddress, setManualAddress] = useState<string>("");
   const [isManualVerifying, setIsManualVerifying] = useState<boolean>(false);
+  const [paymentRail, setPaymentRail] = useState<"stellar" | "zcash">("stellar");
 
   // Fetch requirement upon opening
   useEffect(() => {
@@ -359,7 +361,45 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
         {/* Content */}
         <div className="p-6 space-y-5">
-          {isLoadingReq ? (
+          {/* Payment Rail Selector */}
+          <div className="flex p-1 bg-slate-950 border border-slate-800 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setPaymentRail("stellar")}
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                paymentRail === "stellar"
+                  ? "bg-slate-800 text-white shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <span>Stellar (USDC)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaymentRail("zcash")}
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                paymentRail === "zcash"
+                  ? "bg-purple-950/80 text-purple-300 border border-purple-500/40 shadow-sm"
+                  : "text-slate-400 hover:text-purple-300"
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+              <span>Zcash Shielded (Cicero)</span>
+            </button>
+          </div>
+
+          {paymentRail === "zcash" ? (
+            <ZcashPaymentTab
+              leagueId={leagueId}
+              leagueName={leagueName}
+              entryFeeZec={0.05}
+              onPaymentSuccess={() => {
+                if (onPaymentSuccess) {
+                  onPaymentSuccess({ txHash: "zcash-shielded-settled" });
+                }
+              }}
+            />
+          ) : isLoadingReq ? (
             <div className="py-12 text-center text-slate-400">
               <div className="inline-block w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3" />
               <p className="text-xs">Connecting to Soroban escrow contract...</p>
