@@ -45,16 +45,26 @@ export interface SyncBootstrapResult {
   gameweeksCount: number;
   playersCount: number;
   captainAlertsDispatched?: number;
+  syncedAt?: string;
 }
 
 export interface SyncFixturesResult {
   fixturesCount: number;
+  syncedAt?: string;
 }
 
 export interface SyncStatsResult {
   gameweekId: number;
   gameweekFplId: number;
   statsCount: number;
+  syncedAt?: string;
+}
+
+export interface SyncStatusInfo {
+  lastBootstrapSync: string | null;
+  lastFixturesSync: string | null;
+  lastLiveStatsSync: string | null;
+  lastError: string | null;
 }
 
 export interface DetectedPlayerStatusTransition {
@@ -84,6 +94,11 @@ export class FplSyncService {
   private readonly bus: EventBus;
   private readonly teamManagementBaseUrl: string;
 
+  private lastBootstrapSync: string | null = null;
+  private lastFixturesSync: string | null = null;
+  private lastLiveStatsSync: string | null = null;
+  private lastError: string | null = null;
+
   constructor(options: FplSyncServiceOptions = {}) {
     this.db = options.db ?? prisma;
     this.client = options.client ?? fplClient;
@@ -96,6 +111,15 @@ export class FplSyncService {
     ).replace(/\/$/, "");
   }
 
+  public getSyncStatus(): SyncStatusInfo {
+    return {
+      lastBootstrapSync: this.lastBootstrapSync,
+      lastFixturesSync: this.lastFixturesSync,
+      lastLiveStatsSync: this.lastLiveStatsSync,
+      lastError: this.lastError,
+    };
+  }
+
   /**
    * Synchronizes Teams, Gameweeks, and Players from FPL bootstrap-static.
    * Also detects when a player's status transitions to injured ('i'), doubtful ('d'),
@@ -103,8 +127,9 @@ export class FplSyncService {
    * notifications for all managers who have that player designated as captain.
    */
   public async syncBootstrap(): Promise<SyncBootstrapResult> {
-    console.log("🔄 Starting FPL bootstrap sync...");
-    const raw = await this.client.getBootstrapStatic();
+    try {
+      console.log("🔄 Starting FPL bootstrap sync...");
+      const raw = await this.client.getBootstrapStatic();
 
     // 1. Sync Teams
     console.log(`Synchronizing ${raw.teams.length} teams...`);
@@ -335,6 +360,10 @@ export class FplSyncService {
       );
     }
 
+    const timestamp = new Date().toISOString();
+    this.lastBootstrapSync = timestamp;
+    this.lastError = null;
+
     console.log(
       `✅ FPL Bootstrap sync complete: ${syncedTeams.length} teams, ${syncedGameweeks.length} gameweeks, ${playersCount} players.`
     );
@@ -344,8 +373,13 @@ export class FplSyncService {
       gameweeksCount: syncedGameweeks.length,
       playersCount,
       captainAlertsDispatched,
+      syncedAt: timestamp,
     };
+  } catch (error) {
+    this.lastError = error instanceof Error ? error.message : String(error);
+    throw error;
   }
+}
 
   /**
    * Resolves the upcoming or active pre-deadline gameweek and dispatches captain
@@ -465,8 +499,9 @@ export class FplSyncService {
    * Synchronizes fixtures from FPL.
    */
   public async syncFixtures(): Promise<SyncFixturesResult> {
-    console.log("🔄 Starting FPL fixtures sync...");
-    const rawFixtures = await this.client.getFixtures();
+    try {
+      console.log("🔄 Starting FPL fixtures sync...");
+      const rawFixtures = await this.client.getFixtures();
 
     // Preload team and gameweek lookups
     const teams = await this.db.team.findMany({ select: { id: true, fplId: true } });
@@ -544,15 +579,24 @@ export class FplSyncService {
       await this.db.$transaction(fixtureOps, { timeout: 30000 });
     }
 
+    const timestamp = new Date().toISOString();
+    this.lastFixturesSync = timestamp;
+    this.lastError = null;
+
     console.log(`✅ FPL Fixtures sync complete: ${fixturesCount} fixtures.`);
-    return { fixturesCount };
+    return { fixturesCount, syncedAt: timestamp };
+  } catch (error) {
+    this.lastError = error instanceof Error ? error.message : String(error);
+    throw error;
   }
+}
 
   /**
    * Synchronizes PlayerGameweekStats for a specified gameweek from live event data.
    */
   public async syncGameweekLiveStats(gameweekFplId: number): Promise<SyncStatsResult> {
-    console.log(`🔄 Starting FPL live stats sync for Gameweek ${gameweekFplId}...`);
+    try {
+      console.log(`🔄 Starting FPL live stats sync for Gameweek ${gameweekFplId}...`);
     const gameweek = await this.db.gameweek.findUnique({
       where: { fplId: gameweekFplId },
     });
@@ -685,6 +729,10 @@ export class FplSyncService {
       publishDeltas();
     }
 
+    const timestamp = new Date().toISOString();
+    this.lastLiveStatsSync = timestamp;
+    this.lastError = null;
+
     console.log(
       `✅ FPL Gameweek ${gameweekFplId} live stats sync complete: ${statsCount} player stats recorded.`
     );
@@ -693,8 +741,13 @@ export class FplSyncService {
       gameweekId: gameweek.id,
       gameweekFplId,
       statsCount,
+      syncedAt: timestamp,
     };
+  } catch (error) {
+    this.lastError = error instanceof Error ? error.message : String(error);
+    throw error;
   }
+}
 }
 
 export const fplSyncService = new FplSyncService();

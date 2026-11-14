@@ -66,3 +66,19 @@ export async function syncGameweekLive(
     next(error);
   }
 }
+
+export async function getSyncStatus(
+  _req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const status = fplSyncService.getSyncStatus();
+    res.json({
+      success: true,
+      data: status,
+    });
+  } catch (error) {
+    next(error);
+  }
+}

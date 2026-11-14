@@ -3,6 +3,7 @@ import {
   syncBootstrap,
   syncFixtures,
   syncGameweekLive,
+  getSyncStatus,
 } from "../controllers/sync.controller.js";
 import { requireAuth, requirePermission, requireRole } from "../middleware/authMiddleware.js";
 import { Permission, UserRole } from "../types/index.js";
@@ -22,6 +23,9 @@ router.use(
   syncRateLimiter,
   mutationRateLimiter
 );
+
+// GET /api/v1/admin/sync/status
+router.get("/status", getSyncStatus);
 
 // POST /api/v1/admin/sync/bootstrap
 router.post("/bootstrap", syncBootstrap);
