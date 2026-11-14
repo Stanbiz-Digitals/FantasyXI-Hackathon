@@ -587,12 +587,9 @@ export default function LeagueDetailPage({
                     livePoints
                       ? (userId) => {
                           if (league.teamVisibility === "PRIVATE" && userId !== user?.id) {
-                            toast({
-                              variant: "info",
-                              title: "Private Team Mode",
-                              description:
-                                "This manager's team is private. You can follow their performance on the leaderboard without viewing their squad.",
-                            });
+                            toast.info(
+                              "Private Team Mode: This manager's team is private. You can follow their performance on the leaderboard without viewing their squad."
+                            );
                             return;
                           }
                           setLiveSquadUserId(userId);
