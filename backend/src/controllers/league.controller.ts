@@ -501,9 +501,10 @@ export async function streamLeagueLive(
   next: NextFunction
 ): Promise<void> {
   const leagueId = req.params.id as string;
+  const viewerId = req.user?.id;
 
   try {
-    const first = await liveService.getLeagueSnapshot(leagueId);
+    const first = await liveService.getLeagueSnapshot(leagueId, viewerId);
     if (!first) {
       res.status(404).json({
         success: false,
@@ -528,7 +529,7 @@ export async function streamLeagueLive(
     const intervalMs = Math.min(Math.max(requestedIntervalMs, 250), 1_500);
     const timer = setInterval(async () => {
       try {
-        const snapshot = await liveService.getLeagueSnapshot(leagueId);
+        const snapshot = await liveService.getLeagueSnapshot(leagueId, viewerId);
         if (snapshot) send("snapshot", snapshot);
       } catch (error) {
         send("feed-error", { message: (error as Error).message });
