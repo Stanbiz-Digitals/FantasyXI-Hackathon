@@ -183,7 +183,10 @@ export default function TeamPage() {
           .map((sp) => ({
             id: sp.id,
             playerId: sp.playerId,
-            player: sp.player!,
+            player: {
+              ...sp.player!,
+              price: Number(sp.player!.price) || 0,
+            },
             isStarter: sp.isStarter,
             isCaptain: sp.isCaptain,
             isViceCaptain: sp.isViceCaptain,
@@ -335,11 +338,16 @@ export default function TeamPage() {
       }>("/api/v1/players?limit=100&sortBy=totalPoints&sortOrder=desc");
 
       const data = res?.data;
-      const pool: Player[] = Array.isArray(data)
-        ? data
-        : data && typeof data === "object" && "players" in data && Array.isArray((data as { players: Player[] }).players)
-          ? (data as { players: Player[] }).players
-          : [];
+        const pool: Player[] = (
+          Array.isArray(data)
+            ? data
+            : data && typeof data === "object" && "players" in data && Array.isArray((data as { players: Player[] }).players)
+              ? (data as { players: Player[] }).players
+              : []
+        ).map((p) => ({
+          ...p,
+          price: Number(p.price) || 0,
+        }));
 
       if (pool.length < 15) {
         setErrorMessage("Not enough players in database to auto-draft a squad.");

@@ -104,7 +104,7 @@ export function validateCompleteSquad(players: Array<{
       const p = item.player;
       posCounts[p.position] = (posCounts[p.position] || 0) + 1;
       clubCounts[p.teamId] = (clubCounts[p.teamId] || 0) + 1;
-      totalCost += p.price;
+      totalCost += Number(p.price) || 0;
     }
 
     if (item.isStarter) {

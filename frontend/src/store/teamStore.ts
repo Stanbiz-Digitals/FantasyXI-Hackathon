@@ -118,7 +118,10 @@ export const useTeamStore = create<TeamState>((set, get) => ({
           .map((sp) => ({
             id: sp.id,
             playerId: sp.playerId,
-            player: sp.player!,
+            player: {
+              ...sp.player!,
+              price: Number(sp.player!.price) || 0,
+            },
             isStarter: sp.isStarter,
             isCaptain: sp.isCaptain,
             isViceCaptain: sp.isViceCaptain,

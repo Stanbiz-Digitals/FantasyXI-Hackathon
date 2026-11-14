@@ -70,8 +70,12 @@ export const PlayerPickerModal: React.FC<PlayerPickerModalProps> = ({
         }>(`/api/v1/players?${params.toString()}`);
 
         if (res?.data) {
-          const fetched = Array.isArray(res.data) ? res.data : (res.data as any).players || [];
-          setPlayers(fetched);
+          const fetched: Player[] = Array.isArray(res.data) ? res.data : (res.data as any).players || [];
+          const mapped: Player[] = fetched.map((p: Player) => ({
+            ...p,
+            price: Number(p.price) || 0,
+          }));
+          setPlayers(mapped);
         }
       } catch (err) {
         console.error("Failed to load players for picker:", err);

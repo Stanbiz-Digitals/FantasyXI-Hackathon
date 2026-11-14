@@ -23,7 +23,7 @@ export const BudgetBar: React.FC<BudgetBarProps> = ({
   canSave = false,
 }) => {
   const players = useTeamStore((state) => state.players);
-  const spent = players.reduce((sum, p) => sum + (p.player?.price || 0), 0);
+  const spent = players.reduce((sum, p) => sum + (Number(p.player?.price) || 0), 0);
   const playerCount = players.length;
   const clubCounts: Record<number, number> = {};
   players.forEach((p) => {
@@ -32,7 +32,7 @@ export const BudgetBar: React.FC<BudgetBarProps> = ({
     }
   });
   const maxBudget = SQUAD_RULES.STARTING_BUDGET;
-  const spentM = spent;
+  const spentM = Number(spent) || 0;
   const remainingM = maxBudget - spentM;
   const isOverBudget = remainingM < 0;
 
