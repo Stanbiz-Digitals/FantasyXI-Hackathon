@@ -225,13 +225,13 @@ export default function PlayersPage() {
             <div
               ref={tableContainerRef}
               className="overflow-y-auto"
-              style={{ maxHeight: "884px" }}
+              style={{ maxHeight: "884px", minHeight: "300px" }}
             >
               {/* Spacer div expands to the total logical height */}
-              <div style={{ position: "relative", height: totalHeight, willChange: "transform" }}>
+              <div style={{ position: "relative", height: Math.max(totalHeight, 300), willChange: "transform" }}>
                 <table className="w-full text-left border-collapse text-xs">
                   <tbody className="font-medium">
-                    {virtualItems.map(({ index, item: p, offsetTop }) => (
+                    {(virtualItems.length > 0 ? virtualItems : filteredPlayers.slice(0, 30).map((p, i) => ({ index: i, item: p, offsetTop: i * 52 }))).map(({ index, item: p, offsetTop }) => (
                       <tr
                         key={p.id}
                         className="hover:bg-slate-50 transition-colors border-b border-slate-100"

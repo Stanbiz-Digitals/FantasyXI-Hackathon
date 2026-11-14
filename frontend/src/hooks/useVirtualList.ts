@@ -65,14 +65,17 @@ export function useVirtualList<T>(
 
   const totalHeight = items.length * itemHeight;
 
-  if (items.length === 0 || containerHeight === 0) {
+  const fallbackHeight = typeof window !== "undefined" ? window.innerHeight || 800 : 800;
+  const effectiveHeight = containerHeight > 0 ? containerHeight : fallbackHeight;
+
+  if (items.length === 0) {
     return { virtualItems: [], totalHeight, startIndex: 0, endIndex: -1 };
   }
 
   const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
   const endIndex = Math.min(
     items.length - 1,
-    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
+    Math.ceil((scrollTop + effectiveHeight) / itemHeight) + overscan
   );
 
   const virtualItems: VirtualItem<T>[] = [];
