@@ -154,6 +154,7 @@ div[class*="z-[100000]"] * {
   opacity: 1;
 }
 
+/* Special Gradients */
 .bg-fxi-purple {
   background: linear-gradient(135deg, #37003c 0%, #200028 100%);
 }
