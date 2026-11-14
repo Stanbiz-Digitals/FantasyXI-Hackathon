@@ -33,6 +33,7 @@ import {
   IconAlertCircle,
   IconChevronLeft,
   IconShield,
+  IconLock,
 } from "@/components/ui/Icons";
 
 export default function LeagueDetailPage({
@@ -362,6 +363,12 @@ export default function LeagueDetailPage({
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <LeagueStatusBadge status={league.status} />
+              {league.teamVisibility === "PRIVATE" && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-300 bg-purple-950/80 border border-purple-800/80 px-2 py-0.5 rounded-full">
+                  <IconLock className="w-3 h-3 text-purple-400" />
+                  <span>Private Team Mode</span>
+                </span>
+              )}
               {league.isPrivate && (
                 <span className="inline-flex items-center gap-1 text-xs text-slate-400">
                   <IconShield className="w-3 h-3" />
@@ -575,7 +582,23 @@ export default function LeagueDetailPage({
                   currentUserId={user?.id}
                   livePoints={livePoints}
                   rankChanges={rankChanges}
-                  onSelectEntry={livePoints ? setLiveSquadUserId : undefined}
+                  teamVisibility={league.teamVisibility}
+                  onSelectEntry={
+                    livePoints
+                      ? (userId) => {
+                          if (league.teamVisibility === "PRIVATE" && userId !== user?.id) {
+                            toast({
+                              variant: "info",
+                              title: "Private Team Mode",
+                              description:
+                                "This manager's team is private. You can follow their performance on the leaderboard without viewing their squad.",
+                            });
+                            return;
+                          }
+                          setLiveSquadUserId(userId);
+                        }
+                      : undefined
+                  }
                 />
               )}
             </ErrorBoundary>

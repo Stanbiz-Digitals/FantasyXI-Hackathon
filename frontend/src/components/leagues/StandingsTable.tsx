@@ -4,7 +4,7 @@ import React, { useLayoutEffect, useRef } from "react";
 import { LeagueStandingsEntry, MembershipStatus } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { IconCheck, IconAlertCircle, IconChevronUp, IconChevronDown, IconUsers } from "@/components/ui/Icons";
+import { IconCheck, IconAlertCircle, IconChevronUp, IconChevronDown, IconUsers, IconLock } from "@/components/ui/Icons";
 
 export interface StandingsTableProps {
   standings: LeagueStandingsEntry[];
@@ -15,6 +15,8 @@ export interface StandingsTableProps {
   livePoints?: Record<string, number>;
   /** Positions moved since the previous live update by userId (positive = up) */
   rankChanges?: Record<string, number>;
+  /** Team visibility: PUBLIC allows squad inspection, PRIVATE conceals competitor squads */
+  teamVisibility?: string;
   /** Makes rows clickable, e.g. to open a manager's live squad */
   onSelectEntry?: (userId: string) => void;
 }
@@ -32,6 +34,7 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
   currentUserId,
   livePoints,
   rankChanges = {},
+  teamVisibility = "PUBLIC",
   onSelectEntry,
 }) => {
   const rowRefs = useRef(new Map<string, HTMLTableRowElement>());
@@ -176,6 +179,12 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
                     <span className={`font-bold text-sm ${isMe ? "text-emerald-400" : "text-white"}`}>
                       {entry.squadName || "Fantasy Squad"}
                     </span>
+                    {teamVisibility === "PRIVATE" && !isMe && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700 font-semibold" title="Squad selections hidden in Private Team League">
+                        <IconLock className="w-2.5 h-2.5 text-purple-400" />
+                        <span>Private</span>
+                      </span>
+                    )}
                     {isMe && (
                       <span className="text-[10px] uppercase font-bold tracking-wide text-emerald-400/80">
                         You

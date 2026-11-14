@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { LivePlayerEvent, LiveStandingsEntry } from "@/types";
-import { IconClose } from "@/components/ui/Icons";
+import { IconClose, IconLock } from "@/components/ui/Icons";
 import { LivePitchCanvas } from "@/components/pitch/LivePitchCanvas";
 
 export interface LiveSquadModalProps {
@@ -85,18 +85,34 @@ export const LiveSquadModal: React.FC<LiveSquadModalProps> = ({ entry, events, o
           </div>
         </div>
 
-        <LivePitchCanvas lineup={entry.lineup} events={events} className="mb-4" />
-
-        <table className="w-full text-xs">
-          <tbody className="divide-y divide-slate-800/60">{counting.map((p) => renderRow(p))}</tbody>
-        </table>
-
-        {others.length > 0 && (
+        {(!entry.lineup || entry.lineup.length === 0) ? (
+          <div className="my-6 p-6 rounded-2xl bg-slate-950/80 border border-slate-800 text-center space-y-3">
+            <div className="mx-auto w-10 h-10 rounded-full bg-purple-950/60 border border-purple-800/80 flex items-center justify-center text-purple-300">
+              <IconLock className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white">Private Team Mode</h4>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed max-w-xs mx-auto">
+                This manager&apos;s team is private. You can follow their performance on the leaderboard without viewing their squad.
+              </p>
+            </div>
+          </div>
+        ) : (
           <>
-            <div className="text-[10px] uppercase text-slate-500 font-semibold mt-4 mb-1">Bench</div>
+            <LivePitchCanvas lineup={entry.lineup} events={events} className="mb-4" />
+
             <table className="w-full text-xs">
-              <tbody className="divide-y divide-slate-800/60">{others.map((p) => renderRow(p, true))}</tbody>
+              <tbody className="divide-y divide-slate-800/60">{counting.map((p) => renderRow(p))}</tbody>
             </table>
+
+            {others.length > 0 && (
+              <>
+                <div className="text-[10px] uppercase text-slate-500 font-semibold mt-4 mb-1">Bench</div>
+                <table className="w-full text-xs">
+                  <tbody className="divide-y divide-slate-800/60">{others.map((p) => renderRow(p, true))}</tbody>
+                </table>
+              </>
+            )}
           </>
         )}
       </div>

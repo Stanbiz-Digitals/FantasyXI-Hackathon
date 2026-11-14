@@ -39,6 +39,11 @@ export enum ScoringType {
   HEAD_TO_HEAD = "HEAD_TO_HEAD",
 }
 
+export enum TeamVisibility {
+  PUBLIC = "PUBLIC",
+  PRIVATE = "PRIVATE",
+}
+
 export enum TransactionType {
   DEPOSIT = "DEPOSIT",
   WITHDRAWAL = "WITHDRAWAL",
@@ -208,6 +213,8 @@ export interface League {
   inviteCode: string | null;
   /** Private leagues are invitation-only and hidden from public search */
   isPrivate: boolean;
+  /** Team visibility: PUBLIC allows squad inspection, PRIVATE conceals competitor squads */
+  teamVisibility?: TeamVisibility;
   maxMembers: number;
   minMembers: number;
   currentMembers: number;

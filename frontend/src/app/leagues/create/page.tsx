@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { api, ApiError } from "@/lib/api";
-import { Gameweek, League, ScoringType } from "@/types";
+import { Gameweek, League, ScoringType, TeamVisibility } from "@/types";
 import { PrizeCalculator } from "@/components/leagues/PrizeCalculator";
 import { Button } from "@/components/ui/Button";
 import {
@@ -14,6 +14,8 @@ import {
   IconAlertCircle,
   IconCheck,
   IconChevronLeft,
+  IconLock,
+  IconEye,
 } from "@/components/ui/Icons";
 
 export default function CreateLeaguePage() {
@@ -28,6 +30,7 @@ export default function CreateLeaguePage() {
   const [startGameweekId, setStartGameweekId] = useState<number>(1);
   const [endGameweekId, setEndGameweekId] = useState<number>(5);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [teamVisibility, setTeamVisibility] = useState<TeamVisibility>(TeamVisibility.PUBLIC);
 
   const [isLoadingGw, setIsLoadingGw] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -94,6 +97,7 @@ export default function CreateLeaguePage() {
         endGameweekId: Number(endGameweekId),
         scoringType: ScoringType.CLASSIC,
         isPrivate,
+        teamVisibility,
       });
 
       if (res?.data?.id) {
@@ -269,6 +273,76 @@ export default function CreateLeaguePage() {
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Team Visibility Mode: Classic vs Private Team Mode */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Team Privacy Mode
+              </label>
+              <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                FantasyXI Shielded Mode
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Classic League */}
+              <div
+                onClick={() => setTeamVisibility(TeamVisibility.PUBLIC)}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                  teamVisibility === TeamVisibility.PUBLIC
+                    ? "bg-purple-50/50 border-[#37003c] ring-2 ring-[#37003c]/20 shadow-xs"
+                    : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                <div className="flex items-start gap-2.5">
+                  <div className={`p-2 rounded-xl shrink-0 ${teamVisibility === TeamVisibility.PUBLIC ? "bg-[#37003c] text-white" : "bg-white text-slate-500 border border-slate-200"}`}>
+                    <IconEye className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <span>Classic League</span>
+                      {teamVisibility === TeamVisibility.PUBLIC && (
+                        <span className="text-[9px] font-mono uppercase bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">Active</span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                      Standard fantasy football rules. Participating managers can inspect competitors&apos; squads and player selections.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Private Team League */}
+              <div
+                onClick={() => setTeamVisibility(TeamVisibility.PRIVATE)}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                  teamVisibility === TeamVisibility.PRIVATE
+                    ? "bg-purple-50/50 border-[#37003c] ring-2 ring-[#37003c]/20 shadow-xs"
+                    : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                <div className="flex items-start gap-2.5">
+                  <div className={`p-2 rounded-xl shrink-0 ${teamVisibility === TeamVisibility.PRIVATE ? "bg-[#37003c] text-white" : "bg-white text-slate-500 border border-slate-200"}`}>
+                    <IconLock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <span>Private Team League</span>
+                      {teamVisibility === TeamVisibility.PRIVATE && (
+                        <span className="text-[9px] font-mono uppercase bg-purple-100 text-purple-900 px-1.5 py-0.5 rounded font-bold">Shielded</span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                      Competitors compare points and rankings on the leaderboard, but cannot inspect each other&apos;s squad selections.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1">
+              Note: Privacy mode is locked once the competition begins to protect managers&apos; tactical secrecy.
+            </p>
           </div>
 
           {/* Visibility */}
