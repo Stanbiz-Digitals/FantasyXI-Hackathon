@@ -726,7 +726,7 @@ export class SquadService {
    * checks if the squad belongs to any Private Team League and enforces privacy.
    */
   public async getSquad(squadId: string, viewerId?: string, userRole?: string) {
-    const squad = await prisma.squad.findUnique({
+    const squad = await this.db.squad.findUnique({
       where: { id: squadId },
       include: {
         players: {
@@ -782,7 +782,7 @@ export class SquadService {
     const isOwner = viewerId && viewerId === userId;
     const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
 
-    const squads = await prisma.squad.findMany({
+    const squads = await this.db.squad.findMany({
       where: { userId },
       include: {
         players: {
