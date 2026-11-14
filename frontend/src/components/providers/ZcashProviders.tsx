@@ -2,7 +2,6 @@
 
 import React from "react";
 import { CiceroProvider } from "@cicero-zcash/react";
-import "@cicero-zcash/react/styles.css";
 
 export interface ZcashProvidersProps {
   children: React.ReactNode;
