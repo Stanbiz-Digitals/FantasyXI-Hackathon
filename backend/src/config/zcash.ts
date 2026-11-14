@@ -15,6 +15,11 @@ export interface ZcashConfig {
   timeoutMs: number;
   maxRetries: number;
   requiredConfirmations: number;
+  zingoBinPath?: string;
+  lightwalletdServer: string;
+  watchOnlyUfvk?: string;
+  walletBirthday?: number;
+  dataDir?: string;
 }
 
 export const zcashConfig: ZcashConfig = {
@@ -27,4 +32,10 @@ export const zcashConfig: ZcashConfig = {
   timeoutMs: Number(process.env.ZCASH_RPC_TIMEOUT_MS) || 10_000,
   maxRetries: Number(process.env.ZCASH_RPC_MAX_RETRIES) || 2,
   requiredConfirmations: Number(process.env.ZCASH_CONFIRMATIONS_REQUIRED) || 3,
+  zingoBinPath: process.env.ZINGO_BIN_PATH || "zingo-cli",
+  lightwalletdServer:
+    process.env.ZINGO_LIGHTWALLETD_SERVER || "https://testnet.zec.rocks:443",
+  watchOnlyUfvk: process.env.ZINGO_WATCH_ONLY_UFVK || undefined,
+  walletBirthday: Number(process.env.ZINGO_WALLET_BIRTHDAY) || 2800000,
+  dataDir: process.env.ZINGO_DATA_DIR || undefined,
 };
