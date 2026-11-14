@@ -1,421 +1,205 @@
-# FantasyXI: Decentralized Fantasy Football on Stellar & Soroban
+# ⚽ FantasyXI — Play. Compete. Win.
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-16.3.4-black.svg)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19.x-61dafb.svg)](https://react.dev/)
-[![Express](https://img.shields.io/badge/Express-5.2.1-lightgrey.svg)](https://expressjs.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-7.10.0-2D3748.svg)](https://www.prisma.io/)
-[![Stellar](https://img.shields.io/badge/Stellar-Testnet-08B5E5.svg)](https://stellar.org/)
-[![Soroban](https://img.shields.io/badge/Soroban-v22.0.8-7D3C98.svg)](https://soroban.stellar.org/)
-[![License](https://img.shields.io/badge/License-ISC-green.svg)](LICENSE)
+**Fantasy football meets crypto-powered competitions.**
 
-FantasyXI is an open-source, non-custodial fantasy football platform built on **Stellar Testnet** and **Soroban smart contracts**, integrated with live **Fantasy Premier League (FPL)** data. 
+Turn your fantasy football knowledge into real competition. Build your squad, challenge friends, join private leagues and compete for prize pools through crypto-powered payments with a focus on financial privacy.
 
-Managers assemble squads, compete in custom multi-gameweek leagues, and deposit entry fees directly into a trustless Soroban escrow smart contract. When competition concludes, prize pools (95% distributed 60/30/10 with a 5% platform fee) are settled and disbursed directly on-chain with zero counterparty risk and zero lost cents.
+![alt text](image.png)
 
----
-
-## Architecture Overview
-
-```mermaid
-flowchart TB
-    subgraph Client Layer
-        Browser[User Browser / Next.js 16 UI]
-        Freighter[Freighter Wallet Extension]
-    end
-
-    subgraph Backend Application Layer [Express 5 + TypeScript]
-        AuthSvc[Auth Service: Email/Pass + Google OAuth]
-        SquadSvc[Squad Validator & Formations]
-        LeagueSvc[League & Competition Engine]
-        FplSvc[FPL Upstream Sync & Normalizer]
-        FinSvc[Financial State Machine & Accounting]
-        StellarSvc[Stellar & Soroban Verifier Service]
-    end
-
-    subgraph Data Layer
-        PostgreSQL[(PostgreSQL + Prisma 7)]
-        FPL_API[FPL Official Upstream API]
-    end
-
-    subgraph Blockchain Layer [Stellar Testnet]
-        Horizon[Stellar Horizon API]
-        SorobanRPC[Soroban RPC Node]
-        EscrowContract[FantasyXI Escrow Smart Contract\nCB4KIK42P32SZHKG...]
-        UsdcSAC[USDC Stellar Asset Contract\nCBKWOGJ7CQSVZXIO...]
-    end
-
-    Browser -->|JWT Authenticated API Calls| AuthSvc
-    Browser -->|Squad Selection & Joins| SquadSvc
-    Browser -->|Freighter Signs invokeHostFunction| Freighter
-    Freighter -->|Direct Soroban Invocation: deposit()| EscrowContract
-    
-    FinSvc --> StellarSvc
-    StellarSvc -->|Verify Envelope XDR & Status| Horizon
-    StellarSvc -->|Verify On-Chain Ledger State| SorobanRPC
-
-    LeagueSvc --> PostgreSQL
-    SquadSvc --> PostgreSQL
-    FinSvc --> PostgreSQL
-    FplSvc -->|Sync Players & Fixtures| FPL_API
-    FplSvc --> PostgreSQL
-
-    EscrowContract -->|Transfer USDC| UsdcSAC
-```
-
-### Architectural Separation of Concerns
-
-FantasyXI enforces a strict boundary between Web2 application gameplay and Web3 financial settlements:
-
-1. **Express Owns Game Logic**:
-   - User profiles and JWT authentication (Email/Password + Google OAuth 2.0).
-   - Squad assembly (15 players, £100m budget, formation rules, captains, vice-captains).
-   - Live FPL points aggregation, bonus calculations, and auto-substitutions.
-   - League standings, multi-gameweek aggregations, and deterministic tie-breaking.
-2. **Soroban Owns Financial Escrow**:
-   - Escrow contract manages league partitions identified by `league_id`.
-   - Direct USDC SAC transfers from participants into contract storage.
-   - Enforces atomic invariant guards: `AlreadyDeposited`, `PayoutExceedsDeposits`, `AlreadySettled`, and `NotAuthorized`.
-   - Admin triggers automated on-chain settlement (`settle`) or full refund (`refund`).
-3. **No Web3 Authentication Requirement**:
-   - Users do **not** sign in using Stellar keypairs.
-   - Freighter wallet is invoked **strictly** when signing financial transactions (`deposit`).
+> **IMPORTANT — PROJECT ORIGIN**
+>
+> FantasyXI is a **hackathon-focused fork of my own original FantasyXI repository**, created and maintained by **Stanley Obimma-Okonkwo ([@Stanley471](https://github.com/Stanley471))**.
+>
+> This is not a fork of someone else's project. I created the original FantasyXI and branched this version to independently explore and demonstrate its blockchain-powered competition and Zcash integration without disrupting the original project.
+>
+> The original project: [Stanley471/FantasyXI](https://github.com/Stanley471/FantasyXI)
 
 ---
 
-## On-Chain Infrastructure (Stellar Testnet)
+## The idea
 
-| Component | Identifier / Address |
-| :--- | :--- |
-| **Escrow Smart Contract** | [`CB4KIK42P32SZHKG4JBDCJUV4A4KGCDN6RHOOTIFSBGZHS2IF653VOEA`](https://stellar.expert/explorer/testnet/contract/CB4KIK42P32SZHKG4JBDCJUV4A4KGCDN6RHOOTIFSBGZHS2IF653VOEA) |
-| **USDC Stellar Asset Contract (SAC)** | [`CBKWOGJ7CQSVZXIOIIPCDAUT6APQYBCEE7QTSGDZZ2RO6D3JYRMKWZNG`](https://stellar.expert/explorer/testnet/contract/CBKWOGJ7CQSVZXIOIIPCDAUT6APQYBCEE7QTSGDZZ2RO6D3JYRMKWZNG) |
-| **USDC Classic Asset Issuer** | `GC43IGCUMQYECKMRKGSJE2RPQPJ2QNHFB6VAHNNBO4NONKK3PVHEXN25` |
-| **Network Passphrase** | `Test SDF Network ; September 2015` |
-| **Soroban RPC Server** | `https://soroban-testnet.stellar.org` |
-| **Horizon API Server** | `https://horizon-testnet.stellar.org` |
+Millions of football fans already compete in fantasy football every season. Over 11 million players are already registered for the 2026/27 FPL season.
 
-### Financial Ledger Auditing
+They research players, build squads, make transfers, manage budgets, compete with friends and follow weekly rankings. Fantasy football has successfully turned watching football into an interactive competition.
 
-The backend runs a PostgreSQL-backed escrow reconciliation every five minutes. It compares confirmed league transactions and active member deposits with the Soroban USDC escrow balance, and cross-checks indexed deposit, settlement, refund, and claim events. Reports and their findings are stored in `ledger_audit_runs` / `ledger_audit_findings`; each report includes Horizon, Soroban, and event-indexer ledger sequences and a SHA-256 hash linked to the previous report. High-severity findings are logged as operational alerts. The auditor is read-only and never applies balance corrections.
+But there is an opportunity beyond points and bragging rights.
 
-Staff can review recent reports at `GET /api/v1/admin/ledger-audits` (ADMIN or MODERATOR). Configure `LEDGER_AUDIT_THRESHOLD_STROOPS` to set the global balance alert threshold; the default is `100000` stroops (0.01 USDC). Apply the added Prisma models before deploying the auditor with `cd backend && npx prisma db push`.
+**What if fantasy managers could compete for actual rewards without having to rely on manual collections, payment screenshots and trust-based prize distribution?**
 
----
+That's the idea behind FantasyXI.
 
-## Core Subsystems
+## The problem: Fantasy football is competitive, but the money layer is disconnected
 
-### 1. Fantasy Football Engine
-- **Squad Requirements**: Exactly 15 players (2 Goalkeepers, 5 Defenders, 5 Midfielders, 3 Forwards).
-- **Budgetary Constraints**: Total squad cost must not exceed **£100.0m**.
-- **Club Limits**: Maximum of 3 players from any single Premier League club.
-- **Formations**: Supports standard tactical layouts (e.g., `4-4-2`, `3-5-2`, `3-4-3`, `5-3-2`, `4-3-3`, `5-4-1`) with a minimum of 1 GKP, 3 DEF, 2 MID, 1 FWD starting.
-- **Multipliers & Substitutions**:
-  - Captain scores **2x points**; if the captain plays 0 minutes, the 2x multiplier dynamically transfers to the Vice-Captain.
-  - Automatic bench substitutions prioritize the highest-priority eligible bench player while maintaining formation validity.
+Fantasy football communities naturally create private competitions.
 
-### 2. League Competition Engine
-- **Lifecycle Transitions**: `UPCOMING` $\to$ `ACTIVE` $\to$ `COMPLETED` or `CANCELLED`.
-- **Standings & Tie-Breaking**:
-  1. Primary: Cumulative fantasy points across all competition gameweeks.
-  2. Secondary (Tie-break 1): Peak single-gameweek score within the league window.
-  3. Tertiary (Tie-break 2): Earliest registration timestamp (deterministic resolution).
+Friends, university communities, fan groups and online communities organise leagues with entry fees and prizes. However, running these competitions often introduces problems:
 
-### 3. Soroban Escrow Smart Contract (`contracts/src/lib.rs`)
-Written in Rust using the Soroban SDK (`soroban-sdk = "22.0.8"`), exposing 7 contract functions:
-- `initialize(admin, usdc_token)`: One-time contract initialization.
-- `create_league(creator, league_id, entry_fee)`: Partitions an isolated league escrow.
-- `deposit(participant, league_id)`: Transfers `entry_fee` from participant via USDC SAC client into contract storage. Requires `participant.require_auth()`.
-- `settle(admin, league_id, winners, platform_treasury, platform_fee)`: Distributes prize pool to top 3 winners and platform treasury. Enforces `PayoutExceedsDeposits` and transitions status to `Settled` atomically.
-- `refund(admin, league_id, participants)`: Refunds entry fees to participants in cancelled competitions.
-- `get_league(league_id)`: View function returning on-chain state (`creator`, `entry_fee`, `total_deposited`, `participant_count`, `status`).
-- `get_deposit(league_id, participant)`: View function returning participant deposit amount.
+- **Manual collections:** Organisers collect entry fees through separate payment channels.
+- **Trust dependency:** Participants must trust someone to hold and distribute the prize pool.
+- **Payment disputes:** Screenshots and transfer confirmations can make payment verification difficult.
+- **Limited financial privacy:** Public blockchain transactions can expose financial activity to observers.
+- **Disconnected experiences:** Fantasy managers use one platform to compete and other services to handle payments.
 
-### 4. Deterministic Prize Distribution (Zero Lost Cents)
-Managed by `PrizeService`:
-- **Platform Fee**: Flat 5% deducted from gross prize pool.
-- **Prize Pool (95%)**:
-  - **1st Place**: 60% of net prize pool
-  - **2nd Place**: 30% of net prize pool
-  - **3rd Place**: 10% of net prize pool
-  - *(2-player leagues split 70% / 30%; 1-player leagues refund 100%)*
-- Uses integer stroop rounding to ensure zero dropped fractions or orphaned tokens.
+Fantasy football platforms have made the competition easy. The financial infrastructure around private competitions still has room to improve.
 
----
+## The opportunity: An enormous existing fantasy football community
 
-## Repository Structure
+Fantasy football is not a niche behaviour. It is an established global community.
 
-```text
-FantasyXI/
-├── backend/                   # Node.js + Express + TypeScript Backend
-│   ├── prisma/
-│   │   ├── schema.prisma      # PostgreSQL schema & enum definitions
-│   ├── src/
-│   │   ├── config/            # Database, Stellar, JWT, and CORS configuration
-│   │   ├── controllers/       # HTTP Request handlers (Auth, League, Squad, Financial)
-│   │   ├── middleware/        # JWT Authentication & authorization guards
-│   │   ├── routes/            # Express v5 API routes (/api/v1/...)
-│   │   ├── services/
-│   │   │   ├── financial/     # FinancialService, StellarService, SorobanContractClient
-│   │   │   ├── fpl/           # Upstream FPL synchronization & normalization
-│   │   │   └── league/        # LeagueService, SquadValidator, ScoringService, PrizeService
-│   │   ├── scripts/           # Phase 7.6 Live Stellar Testnet verification scripts
-│   │   └── tests/             # Comprehensive unit & integration test suites
-│   ├── package.json           # Scripts & backend dependencies
-│   └── tsconfig.json          # NodeNext strict TypeScript configuration
-├── frontend/                  # Next.js 16 + React 19 + TailwindCSS App
-│   ├── src/
-│   │   ├── app/               # App Router pages (leagues, fixtures, team, profile, etc.)
-│   │   ├── components/        # UI components, Pitch visualizer, PlayerCard, PaymentModal
-│   │   ├── context/           # AuthContext (JWT session management)
-│   │   └── lib/
-│   │       ├── api.ts         # Axios/Fetch API client wrapper
-│   │       └── stellar/       # sorobanDeposit.ts (Freighter + Soroban RPC client)
-│   ├── package.json           # Frontend dependencies (@stellar/freighter-api, @stellar/stellar-sdk)
-│   └── next.config.ts         # Next.js configuration (Turbopack)
-├── contracts/                 # Soroban Escrow Smart Contract (Rust)
-│   ├── src/
-│   │   └── lib.rs             # Escrow contract implementation & Rust unit tests
-│   └── Cargo.toml             # Rust package configuration (soroban-sdk = "22.0.8")
-├── tools/                     # Local developer tooling (Stellar CLI binaries)
-└── REGULATORY_CONSIDERATIONS.md # Legal, AML, and non-custodial compliance documentation
-```
+The official Fantasy Premier League platform reports **over 11 million players**, demonstrating the scale of interest in fantasy football.
 
----
+Source: [Official Fantasy Premier League](https://fantasy.premierleague.com/)
 
-## Local Development Setup
+This existing audience already understands:
+- Building fantasy squads.
+- Player prices and budgets.
+- Weekly gameweeks and fixtures.
+- Points, rankings and league tables.
+- Competing against friends and communities.
 
-### Prerequisites
-- **Node.js**: v20.x or v24.x
-- **Rust**: `1.75.0+` with target `wasm32-unknown-unknown`
-- **PostgreSQL**: `v14+` running locally or via Docker
-- **Stellar CLI**: `v22+` installed for contract simulation / execution
-- **Freighter Wallet Extension**: Installed in your browser (configured to Stellar Testnet)
+FantasyXI builds on familiar behaviour rather than asking users to learn an entirely new game.
 
-### 1. Database Setup
-Ensure PostgreSQL is running and create a local database:
-```sql
-CREATE DATABASE fantasyxi;
-```
+**Our opportunity is to bring crypto-powered competitions to an audience that already loves competing.**
 
-### 2. Backend Setup
-Navigate to `backend/` and create your `.env` file:
-```bash
-cd backend
-cp .env.example .env
-```
+Initial communities include:
+- University and campus fantasy leagues.
+- Friends and private football communities.
+- Fantasy football content creators and their audiences.
+- Online football fan communities.
+- Organised fantasy competitions and tournaments.
 
-Configure `backend/.env`:
-```env
-PORT=5000
-NODE_ENV=development
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/fantasyxi?schema=public"
-JWT_SECRET="your-secure-jwt-secret-key-at-least-32-chars"
-JWT_EXPIRES_IN="7d"
+## The solution: FantasyXI
 
-# Stellar Testnet Configuration
-STELLAR_NETWORK=TESTNET
-STELLAR_HORIZON_URL="https://horizon-testnet.stellar.org"
-STELLAR_SOROBAN_RPC_URL="https://soroban-testnet.stellar.org"
-STELLAR_NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
-STELLAR_USDC_ASSET_CODE="USDC"
-STELLAR_USDC_ISSUER="GC43IGCUMQYECKMRKGSJE2RPQPJ2QNHFB6VAHNNBO4NONKK3PVHEXN25"
-STELLAR_USDC_TOKEN_CONTRACT_ID="CBKWOGJ7CQSVZXIOIIPCDAUT6APQYBCEE7QTSGDZZ2RO6D3JYRMKWZNG"
-STELLAR_ESCROW_CONTRACT_ID="CB4KIK42P32SZHKG4JBDCJUV4A4KGCDN6RHOOTIFSBGZHS2IF653VOEA"
-STELLAR_TREASURY_ADDRESS="GC43IGCUMQYECKMRKGSJE2RPQPJ2QNHFB6VAHNNBO4NONKK3PVHEXN25"
-```
+FantasyXI combines the familiar fantasy football experience with crypto-powered private competitions.
 
-Install dependencies, run database migrations, and generate Prisma client:
-```bash
-npm install
-npm run db:migrate
-npm run build
-```
+<details>
+<summary>How it works</summary>
 
-Start the backend development server:
-```bash
-npm run dev
-```
-Backend API will be running at `http://localhost:5000`.
+1. **Build your squad:** Select real football players and manage your fantasy budget.
+2. **Create or join a league:** Compete with friends, campus communities or other managers.
+3. **Set competition rules:** Configure league entry requirements and prize structures.
+4. **Make a payment:** Use the supported crypto payment experience to request and make league-entry payments.
+5. **Compete:** Earn points based on real-world football performances and climb the leaderboard.
+6. **Win:** Compete for rewards according to the league's rules and prize structure.
 
-### 3. Frontend Setup
-The frontend is a Next.js app and should be started from the `frontend/` directory using a supported Node.js version.
+</details>
 
-Requirements:
-- **Node.js**: `v20.x` or `v24.x`
-- **Package manager**: `npm`
+The goal is to make private fantasy competitions easier to organise, participate in and manage.
 
-From the repository root:
-```bash
-cd frontend
-node -v
-npm install
-cp .env.example .env.local
-```
+## Why Zcash?
 
-Configure `frontend/.env.local`:
-```env
-NEXT_PUBLIC_API_URL="http://localhost:5000"
-NEXT_PUBLIC_STELLAR_NETWORK="TESTNET"
-NEXT_PUBLIC_STELLAR_ESCROW_CONTRACT_ID="CB4KIK42P32SZHKG4JBDCJUV4A4KGCDN6RHOOTIFSBGZHS2IF653VOEA"
-NEXT_PUBLIC_STELLAR_SOROBAN_RPC_URL="https://soroban-testnet.stellar.org"
-NEXT_PUBLIC_STELLAR_NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
-```
+![alt text](image-1.png)
+Financial privacy matters when people participate in money-based competitions.
 
-Install dependencies and start the local Next.js development server:
-```bash
-npm install
-npm run dev
-```
+On transparent blockchains, transaction details can be publicly inspected and potentially linked through transaction patterns.
 
-For the current Next.js setup, `npm run dev` starts the local development server (using the standard Next.js app setup; in v16 this can use Turbopack under the hood). The frontend will be available at `http://localhost:3000`.
+FantasyXI explores **Zcash shielded payments** to provide a more privacy-conscious payment experience.
+
+Zcash brings:
+
+- **Shielded transactions:** Protect transaction details using Zcash's shielded pool.
+- **Financial privacy:** Reduce the amount of payment information exposed to public blockchain observers.
+- **Payment references:** Associate payment requests with individual league invoices.
+- **A privacy-first foundation:** Build financial interactions around user privacy rather than treating it as an afterthought.
+
+FantasyXI integrates the Cicero Zcash developer toolkit for wallet connection and shielded payment request generation.
+
+The integration is designed to support compatible Zcash wallets and Testnet demonstrations.
+
+**Privacy is not just a feature of the payment flow. It is part of the product philosophy.**
+
+Learn more:
+- [Zcash](https://z.cash/)
+- [Cicero](https://github.com/Kaycee276/cicero)
+
+## What makes FantasyXI different?
+
+| Traditional fantasy platforms | FantasyXI |
+|---|---|
+| Fantasy squads and points | Fantasy squads and points |
+| Private fantasy leagues | Private fantasy leagues |
+| Competition and rankings | Competition and rankings |
+| External/manual payment arrangements | Integrated crypto payment experience |
+| Limited financial privacy in public payment rails | Zcash shielded payment support |
+
+FantasyXI is not trying to replace the fantasy football experience people already enjoy.
+
+It is extending that experience with infrastructure for private, crypto-powered competitions.
+
+## Product highlights
+
+- Fantasy football squads and player selection.
+- Player budgets and valuations.
+- Gameweek-based competition.
+- League creation and management.
+- Private team visibility controls.
+- League leaderboards and rankings.
+- Crypto payment interface.
+- Zcash wallet connection.
+- ZIP-321 payment request generation.
+- Payment QR code generation.
+
+## Technology
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js, React, TypeScript |
+| Backend | Node.js, Express |
+| Database | PostgreSQL |
+| ORM | Prisma |
+| Blockchain | Zcash |
+| Wallet integration | Cicero Zcash React toolkit |
+| Payment format | ZIP-321 |
+
+## Current development status
+
+FantasyXI is an active hackathon project. Some capabilities are implemented, while others remain under development.
+
+| Capability | Status |
+|---|---|
+| Fantasy squads and player selection | Implemented |
+| Fantasy scoring and rankings | Implemented |
+| League creation and management | Implemented |
+| Private team visibility | Implemented |
+| Zcash wallet connection interface | Integrated |
+| ZIP-321 payment request generation | Integrated |
+| Payment QR generation | Integrated |
+| Automated shielded payment detection | Under development |
+| Automated payment reconciliation | Under development |
+| Automated prize distribution | Planned |
+
+**Important:** Wallet connection and payment request generation do not by themselves mean that a payment has been verified or that funds are held in escrow. Automated payment verification and prize distribution are separate development milestones.
+
+## Roadmap
+
+- [x] Build the fantasy football competition experience.
+- [x] Introduce private league functionality.
+- [x] Integrate Zcash wallet connection.
+- [x] Generate shielded payment requests.
+- [ ] Complete automated shielded payment detection.
+- [ ] Complete payment reconciliation and membership activation.
+- [ ] Develop secure prize distribution.
+- [ ] Expand competitions beyond football.
+
+## Vision
+
+FantasyXI starts with football, but the idea extends much further.
+
+Any community built around competition could benefit from private, crypto-powered prize pools.
+
+From campus tournaments to creator communities and global fantasy competitions, we want to make it easier for people to compete, contribute and win.
+
+**Fantasy football is the starting point. Community-powered competition is the bigger vision.**
 
 ---
 
-## Testing & Quality Assurance
+## Built by
 
-See [backend resilience checks](backend/RESILIENCE.md) for financial chaos testing,
-read-replica consistency, Redis Streams fanout, and local k6 load testing.
+**Stanley Obimma-Okonkwo**  
+GitHub: [@Stanley471](https://github.com/Stanley471)
 
-FantasyXI maintains automated test suites across all architectural layers.
-
-### 1. Backend Automated Unit Tests (118 Tests)
-Executes domain rules, scoring, formation constraints, tie-breakers, auth, and payment envelope parsing without live network dependencies:
-```bash
-cd backend
-npm test
-```
-**Output**: `118 passed, 0 failed across 33 suites`
-
-### 2. Smart Contract Tests (6 Tests)
-Executes contract unit tests and invariant checks inside the Soroban simulation environment:
-```bash
-cd contracts
-cargo test
-```
-**Output**: `6 passed, 0 failed`
-- `test_initialize_and_create_league`: Validates partition initialization.
-- `test_deposit_and_single_settlement`: Proves 95/5 payout mechanics.
-- `test_duplicate_deposit_rejected`: Reverts with `AlreadyDeposited` (#6).
-- `test_settlement_payout_exceeding_deposits_rejected`: Reverts with `PayoutExceedsDeposits` (#9).
-- `test_unauthorized_settlement_rejected`: Reverts with `NotAuthorized` (#10).
-- `test_refund_cancelled_league`: Proves complete token return upon cancellation.
-
-### 3. Live Stellar Testnet E2E Lifecycle Proof
-Executes a live on-chain competition (`create_league`, multi-manager `deposit`, envelope verification, guard assertions, and `settle`) against Stellar Testnet:
-```bash
-cd backend
-npx tsx src/scripts/provePhase76Lifecycle.ts
-```
-Results are saved to `backend/phase7.6_testnet_evidence.json`.
-
-### 4. Frontend Production Build
-Verifies strict TypeScript compliance and static page optimization:
-```bash
-cd frontend
-npm run build
-```
-**Output**: `13/13 static & dynamic routes compiled with zero errors`.
-
-### 5. Progressive Web App (Offline Mode)
-The frontend installs as a PWA (manifest + service worker in `frontend/public/`). The service worker is only registered in production builds:
-```bash
-cd frontend
-npm run build && npm start
-```
-- Open the app once online and sign in; the squad page and its assets are cached at install, and each successful squad load saves a per-user snapshot on the device.
-- In DevTools > Application, check the manifest and service worker, then tick **Network > Offline** and reload `/team`: the squad is shown read-only with an offline banner. Uncached pages fall back to `/offline.html`.
-- Saving the squad and transfers always require a connection. Authenticated API responses are never stored in the shared service worker cache, and offline snapshots are cleared on sign-out.
+Built for the Blockchain UNN Conference 5.0 Hackathon.
 
 ---
 
-## Production Deployment Guide
-
-### Deploying the Backend on Render
-1. Create a **Web Service** on [Render](https://render.com).
-2. Connect your repository and configure:
-   - **Root Directory**: `backend`
-   - **Environment**: `Node`
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm start` *(Runs compiled code via `node dist/server.js` without dev tooling)*
-3. Add Environment Variables:
-   - `DATABASE_URL`: Hosted PostgreSQL connection string.
-   - `JWT_SECRET`: Random 64-character secret.
-   - `NODE_ENV`: `production`
-   - Plus all `STELLAR_*` configuration parameters.
-
-### Deploying the Frontend on Vercel / Render
-1. Create a **Frontend Project** pointing to `frontend/`.
-2. Configure build settings:
-   - **Framework Preset**: `Next.js`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `.next`
-3. Add Environment Variables:
-   - `NEXT_PUBLIC_API_URL`: URL of your deployed backend.
-   - `NEXT_PUBLIC_STELLAR_ESCROW_CONTRACT_ID`: `CB4KIK42P32SZHKG4JBDCJUV4A4KGCDN6RHOOTIFSBGZHS2IF653VOEA`
-
----
-
-## Security & Regulatory Compliance
-
-- **Non-Custodial Architecture**: FantasyXI never takes possession or custody of user stablecoins. Funds reside exclusively in the open-source Soroban smart contract escrow partition until settlement.
-- **Google Sign-In & Account Linking**: Managers can sign in with email/password or Google (OAuth 2.0 / OpenID Connect); both open the same account. A verified Google email matching an existing account is linked automatically, and signed-in managers can link or unlink Google (and add a password to a Google-only account) from their profile. The OAuth state is HMAC-signed and bound to the initiating browser with an HttpOnly nonce cookie, return paths are restricted to same-site paths, and the issued JWT is handed to the frontend in the URL fragment so it never reaches server logs.
-- **Envelope XDR Verification**: Payments are verified on-chain by decoding `invokeHostFunction` transaction envelopes, matching contract ID, function call, sender public key, and league ID.
-- **SQL & Injection Protection**: Database interactions are performed using Prisma ORM with parameterized queries.
-- **Rate Limiting & Authentication**: Public API traffic uses an atomic Redis sliding-window limiter with per-route-group anonymous, authenticated-user, and webhook tiers. Configure `RATE_LIMIT_REDIS_URL` (or `REDIS_URL`) for shared limits across instances; while Redis is unavailable, a bounded conservative in-process limiter is used. Route thresholds and windows are defined in `backend/src/config/rateLimit.ts`. The higher webhook tier is enabled only on webhook paths when `WEBHOOK_RATE_LIMIT_SECRET` matches the `X-Webhook-Secret` header. Authentication endpoints retain a separate strict IP limiter.
-- **Rate Limiting & Authentication**: Endpoints requiring user context are guarded by JWT authorization middleware with CSRF-protected OAuth state tokens.
-- **Role-Based Access Control**: Every protected endpoint declares the permission it needs via `requirePermission`; the role-to-permission matrix lives in [`backend/src/config/permissions.ts`](backend/src/config/permissions.ts). Roles are `USER` (managers), `MODERATOR`, `ADMIN` and `SERVICE` (automated callers). Elevated permissions are re-checked against the database on each request, so demoting an account takes effect immediately. A route audit test fails the build if a non-public endpoint is added without a permission guard.
-- **Service Credentials**: Schedulers and monitoring authenticate with the `X-Service-Key` header using keys from `SERVICE_API_KEYS` (`name:key` pairs, keys of at least 32 characters). The `SERVICE` role can run syncs, score calculation, reconciliation and queue health checks, but cannot act as a manager, and it can never be claimed through a user JWT.
-- Consult [`REGULATORY_CONSIDERATIONS.md`](file:///c:/ReactApps/FantasyXI/REGULATORY_CONSIDERATIONS.md) for legal classifications, skill-game exemptions, and AML operational considerations.
-
----
-
-## License
-
-This project is licensed under the **ISC License**. See the `LICENSE` file for details.
-
-## Stellar Testnet Setup
-
-This section helps contributors configure the Stellar Testnet environment locally to interact with Soroban contracts and the USDC Stellar Asset used by FantasyXI.
-
-- **Network & endpoints**:
-   - Horizon: `https://horizon-testnet.stellar.org`
-   - Soroban RPC: `https://soroban-testnet.stellar.org`
-   - Network passphrase: `Test SDF Network ; September 2015`
-
-- **Required environment variables** (add these to `backend/.env` and `frontend/.env.local` as appropriate):
-   - `STELLAR_NETWORK` (e.g. `TESTNET`)
-   - `STELLAR_HORIZON_URL` (e.g. `https://horizon-testnet.stellar.org`)
-   - `STELLAR_SOROBAN_RPC_URL` (e.g. `https://soroban-testnet.stellar.org`)
-   - `STELLAR_NETWORK_PASSPHRASE` (e.g. `Test SDF Network ; September 2015`)
-   - `STELLAR_USDC_ASSET_CODE` (e.g. `USDC`)
-   - `STELLAR_USDC_ISSUER` (classic issuer public key, e.g. `GC43IGCUMQYECKMRKGSJE2RPQPJ2QNHFB6VAHNNBO4NONKK3PVHEXN25`)
-   - `STELLAR_USDC_TOKEN_CONTRACT_ID` (SAC contract id, e.g. `CBKWOGJ7CQSVZXIOIIPCDAUT6APQYBCEE7QTSGDZZ2RO6D3JYRMKWZNG`)
-   - `STELLAR_ESCROW_CONTRACT_ID` (Escrow contract id, e.g. `CB4KIK42P32SZHKG4JBDCJUV4A4KGCDN6RHOOTIFSBGZHS2IF653VOEA`)
-
-- **Creating & funding testnet accounts**:
-   1. Generate a new keypair using the Stellar Laboratory or the SDK of your choice.
-       - Stellar Laboratory Keypair tool: https://laboratory.stellar.org/#account-creator?network=test
-   2. Fund your testnet account using Friendbot:
-       - Friendbot URL: `https://friendbot.stellar.org/?addr=YOUR_PUBLIC_KEY`
-       - Example: `curl "https://friendbot.stellar.org/?addr=G...YOUR_PUBLIC...KEY"`
-
-- **Obtaining testnet USDC**:
-   - On Testnet, USDC is represented by a token issuer and/or SAC contract. If the repo provides a test USDC faucet script, run it; otherwise request USDC by contacting the test asset issuer or minting via a local/authorized issuer key (not in production).
-   - Helpful links:
-      - Stellar Laboratory (Transactions & Assets): https://laboratory.stellar.org/
-      - Horizon Testnet Explorer: https://stellar.expert/explorer/testnet
-
-- **Trustline note**: Before receiving USDC or interacting with the USDC SAC, ensure your test account establishes a trustline to the USDC asset (unless using contract-controlled flows that don't require a classic trustline). In the Stellar Laboratory, add an Asset with code `USDC` and issuer `GC43IGCUMQYECKMRKGSJE2RPQPJ2QNHFB6VAHNNBO4NONKK3PVHEXN25` and submit a change-trust operation.
-
-- **Quick example: fund + trustline via `stellar-sdk` (Node.js)**
-```js
-// install: npm install stellar-sdk
-const StellarSdk = require('stellar-sdk');
-const server = new StellarSdk.Server('https://horizon-testnet.stellar.org');
-const pair = StellarSdk.Keypair.random();
-console.log('Public:', pair.publicKey());
-console.log('Secret:', pair.secret());
-// Fund using Friendbot (curl in shell) then create trustline and optionally request test USDC from issuer-owned faucet.
-```
-
-If you follow the steps above you will be able to fund a testnet account and configure your local environment to interact with the Soroban RPC and the FantasyXI escrow contract on Stellar Testnet.
+*FantasyXI — Play. Compete. Win.*
