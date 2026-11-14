@@ -807,13 +807,13 @@ export class SquadService {
     });
 
     if (isOwner || isAdmin) {
-      return squads.map(({ memberships, ...s }) => s);
+      return squads.map(({ memberships, ...s }: any) => s);
     }
 
     // Filter out squads enrolled in private leagues for external viewers
     return squads
-      .filter((s) => !s.memberships.some((m: { league?: { teamVisibility?: string } }) => m.league?.teamVisibility === "PRIVATE"))
-      .map(({ memberships, ...s }) => s);
+      .filter((s: any) => !s.memberships.some((m: { league?: { teamVisibility?: string } }) => m.league?.teamVisibility === "PRIVATE"))
+      .map(({ memberships, ...s }: any) => s);
   }
 
   /**
