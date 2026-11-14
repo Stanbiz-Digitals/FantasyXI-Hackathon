@@ -7,7 +7,7 @@ import { MobileNav } from "./MobileNav";
 import { OfflineIndicator } from "./OfflineIndicator";
 import { PushNotificationPrompt } from "./PushNotificationPrompt";
 import { FantasyXILogo } from "@/components/ui/FantasyXILogo";
-import { IconSearch, IconBell, IconSun, IconWallet } from "@/components/ui/Icons";
+import { IconSearch, IconBell } from "@/components/ui/Icons";
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,7 +46,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             />
           </div>
 
-          {/* Top Right Quick Actions & Connect Wallet */}
+          {/* Top Right Quick Actions */}
           <div className="flex items-center gap-3">
             {/* Notification Bell */}
             <button
@@ -56,15 +56,6 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
               <IconBell className="w-4 h-4" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500" />
             </button>
-
-            {/* Connect Wallet Button */}
-            <Link
-              href="/profile"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#37003c] text-white hover:bg-[#28002c] shadow-sm transition-all"
-            >
-              <IconWallet className="w-3.5 h-3.5 text-[#00ff87]" />
-              <span>Connect Wallet</span>
-            </Link>
           </div>
         </header>
 
