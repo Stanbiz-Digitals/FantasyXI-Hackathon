@@ -20,6 +20,7 @@ import {
   MembershipStatus,
   PaymentStatus,
   ScoringType,
+  TeamVisibility,
   LeagueTierMovement,
   TransactionType,
   TransactionStatus,
@@ -40,6 +41,7 @@ export {
   MembershipStatus,
   PaymentStatus,
   ScoringType,
+  TeamVisibility,
   LeagueTierMovement,
   TransactionType,
   TransactionStatus,
@@ -269,6 +271,7 @@ export interface CreateLeagueInput {
   scoringConfig?: LeagueScoringConfig;
   scoringPreset?: ScoringPreset;
   isPrivate?: boolean; // default false: private leagues are invitation-only
+  teamVisibility?: TeamVisibility; // default PUBLIC (Classic League) vs PRIVATE (Private Team League)
   minBuyIn?: number; // private leagues only: deposits must prove a stake >= minBuyIn (USDC)
   maxBuyIn?: number; // private leagues only: deposits must prove a stake <= maxBuyIn (USDC)
   payoutPreset?: "standard" | "winner-takes-all" | "top-five" | "custom";

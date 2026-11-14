@@ -7,6 +7,7 @@ import {
   PaymentStatus,
   Position,
   ScoringType,
+  TeamVisibility,
   LeagueTierMovement,
   CreateLeagueInput,
   CreateLeagueTierGroupInput,
@@ -489,6 +490,11 @@ export class LeagueService {
       throw new LeagueValidationError("isPrivate must be a boolean");
     }
 
+    const teamVisibility = input.teamVisibility ?? TeamVisibility.PUBLIC;
+    if (!Object.values(TeamVisibility).includes(teamVisibility)) {
+      throw new LeagueValidationError(`Invalid team visibility: ${teamVisibility}`);
+    }
+
     const hasBuyInRange = input.minBuyIn !== undefined || input.maxBuyIn !== undefined;
     if (hasBuyInRange) {
       const { minBuyIn, maxBuyIn } = input;
@@ -607,6 +613,7 @@ export class LeagueService {
           payoutPreset,
           payoutSplitsBps: payoutPreset === "custom" ? input.customPrizeSplitsBps : [],
           isPrivate: input.isPrivate ?? false,
+          teamVisibility,
           ...(hasBuyInRange && { minBuyIn: input.minBuyIn, maxBuyIn: input.maxBuyIn }),
           startGameweekId: startGw.id,
           endGameweekId: endGw.id,
