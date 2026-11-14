@@ -54,6 +54,11 @@ enum ScoringType {
   HEAD_TO_HEAD
 }
 
+enum TeamVisibility {
+  PUBLIC
+  PRIVATE
+}
+
 enum MatchmakingStatus {
   QUEUED
   MATCHED
@@ -433,6 +438,8 @@ model League {
   payoutSplitsBps Int[]        @default([]) @map("payout_splits_bps")
   /// Private leagues are hidden from public search and joinable only via invitation
   isPrivate       Boolean      @default(false) @map("is_private")
+  /// Team visibility: PUBLIC allows competitors to inspect squads, PRIVATE conceals squads
+  teamVisibility  TeamVisibility @default(PUBLIC) @map("team_visibility")
   /// Private high-roller leagues: deposits must carry a zero-knowledge proof
   /// that the committed stake lies within [minBuyIn, maxBuyIn]
   minBuyIn        Decimal?     @map("min_buy_in") @db.Decimal(10, 2)
