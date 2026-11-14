@@ -32,7 +32,7 @@ export const BudgetBar: React.FC<BudgetBarProps> = ({
     }
   });
   const maxBudget = SQUAD_RULES.STARTING_BUDGET;
-  const spentM = spent / 10;
+  const spentM = spent;
   const remainingM = maxBudget - spentM;
   const isOverBudget = remainingM < 0;
 

@@ -263,8 +263,8 @@ export default function TeamPage() {
     .filter((p) => p.isStarter)
     .sort((a, b) => a.positionOrder - b.positionOrder);
 
-  const totalSpent = players.reduce((sum, p) => sum + (p.player?.price || 0), 0);
-  const remainingBudgetTenths = SQUAD_RULES.STARTING_BUDGET * 10 - totalSpent;
+  const totalSpent = players.reduce((sum, p) => sum + (Number(p.player?.price) || 0), 0);
+  const remainingBudgetTenths = SQUAD_RULES.STARTING_BUDGET - totalSpent;
 
   // Club player counts
   const clubCounts: Record<number, number> = {};
@@ -279,7 +279,7 @@ export default function TeamPage() {
   const canSave =
     players.length === 15 &&
     validation.valid &&
-    totalSpent <= SQUAD_RULES.STARTING_BUDGET * 10 &&
+    totalSpent <= SQUAD_RULES.STARTING_BUDGET &&
     !isDeadlinePassed;
 
   // Selected player object
@@ -912,7 +912,7 @@ export default function TeamPage() {
                     {selectedPlayer.player.displayName}
                   </div>
                   <div className="text-xs text-slate-500 font-mono mt-0.5">
-                    {selectedPlayer.player.team?.shortName || "PL"} &bull; £{(selectedPlayer.player.price / 10).toFixed(1)}m &bull; {selectedPlayer.player.totalPoints} pts
+                    {selectedPlayer.player.team?.shortName || "PL"} &bull; £{Number(selectedPlayer.player.price).toFixed(1)}m &bull; {selectedPlayer.player.totalPoints} pts
                   </div>
                 </div>
               </div>

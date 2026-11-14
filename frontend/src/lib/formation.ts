@@ -135,10 +135,10 @@ export function validateCompleteSquad(players: Array<{
     }
   }
 
-  // Check budget (prices stored in tenths, e.g. 1000 = 100.0m)
-  if (totalCost > SQUAD_RULES.STARTING_BUDGET * 10) {
+  // Check budget (prices stored in millions, e.g. 100.0m)
+  if (totalCost > SQUAD_RULES.STARTING_BUDGET) {
     errors.push(
-      `Squad cost £${(totalCost / 10).toFixed(1)}m exceeds available budget of £${SQUAD_RULES.STARTING_BUDGET.toFixed(1)}m.`
+      `Squad cost £${totalCost.toFixed(1)}m exceeds available budget of £${SQUAD_RULES.STARTING_BUDGET.toFixed(1)}m.`
     );
   }
 

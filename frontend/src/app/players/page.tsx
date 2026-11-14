@@ -266,7 +266,7 @@ export default function PlayersPage() {
 
                         {/* Price */}
                         <td className="py-3 px-3 text-right font-mono font-bold text-slate-900" style={{ width: "9%" }}>
-                          £{(p.price / 10).toFixed(1)}m
+                          £{Number(p.price).toFixed(1)}m
                         </td>
 
                         {/* Points */}
@@ -340,7 +340,7 @@ export default function PlayersPage() {
                       <div className="rounded-xl bg-slate-50 border border-slate-200/80 px-2 py-1.5">
                         <div className="text-slate-400 uppercase tracking-wide text-[9px] font-bold">£</div>
                         <div className="font-mono font-bold text-slate-900 text-[11px] pt-0.5">
-                          {(p.price / 10).toFixed(1)}m
+                          {Number(p.price).toFixed(1)}m
                         </div>
                       </div>
                       <div className="rounded-xl bg-slate-50 border border-slate-200/80 px-2 py-1.5">
@@ -402,7 +402,7 @@ export default function PlayersPage() {
 
                       {/* Price */}
                       <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">
-                        £{(p.price / 10).toFixed(1)}m
+                        £{Number(p.price).toFixed(1)}m
                       </td>
 
                       {/* Points */}

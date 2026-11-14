@@ -254,7 +254,7 @@ export const PitchVisualizer: React.FC<PitchVisualizerProps> = ({
               {player.player.displayName || player.player.lastName}
             </p>
             <p className="text-[9px] text-slate-400">
-              £{(player.player.price / 10).toFixed(1)}m
+              £{Number(player.player.price).toFixed(1)}m
             </p>
           </div>
         </div>

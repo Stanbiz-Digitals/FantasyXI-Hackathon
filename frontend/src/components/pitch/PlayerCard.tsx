@@ -255,7 +255,7 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({
 
         {/* Price & Points Footer */}
         <div className="w-20 sm:w-24 flex items-center justify-between bg-slate-950/90 border-x border-b border-slate-800 rounded-b px-1.5 py-0.5 text-[9px] sm:text-[10px] font-mono">
-          <span className="text-slate-400">£{(player.price / 10).toFixed(1)}m</span>
+          <span className="text-slate-400">£{Number(player.price).toFixed(1)}m</span>
           <span className="font-bold text-emerald-400">{player.totalPoints} pts</span>
         </div>
 

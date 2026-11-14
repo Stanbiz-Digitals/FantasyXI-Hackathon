@@ -102,7 +102,7 @@ export const PlayerPickerModal: React.FC<PlayerPickerModalProps> = ({
             <p className="text-xs text-slate-500 mt-0.5 font-medium">
               Available budget:{" "}
               <span className="font-mono font-bold text-emerald-700">
-                £{(effectiveBudget / 10).toFixed(1)}m
+                £{effectiveBudget.toFixed(1)}m
               </span>
             </p>
           </div>
@@ -240,7 +240,7 @@ export const PlayerPickerModal: React.FC<PlayerPickerModalProps> = ({
                     <div className="flex items-center gap-4 shrink-0">
                       <div className="text-right">
                         <div className="font-mono font-bold text-slate-900 text-sm">
-                          £{(p.price / 10).toFixed(1)}m
+                          £{Number(p.price).toFixed(1)}m
                         </div>
                         <div className="font-mono text-emerald-700 font-bold text-xs">
                           {p.totalPoints} pts
