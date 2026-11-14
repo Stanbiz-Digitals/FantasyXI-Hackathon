@@ -57,23 +57,23 @@ export const LeagueChat: React.FC<LeagueChatProps> = ({ leagueId, currentUser })
   return (
     <section
       aria-labelledby="league-chat-heading"
-      className="rounded-xl border border-pitch-border bg-pitch-surface p-5 shadow-md"
+      className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-sm"
     >
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h2 id="league-chat-heading" className="text-lg font-bold uppercase tracking-tight text-white">
-            League chat
+          <h2 id="league-chat-heading" className="text-lg font-black tracking-tight text-slate-900">
+            League Chat
           </h2>
-          <p className="mt-0.5 text-xs text-slate-400">Banter with the other managers. Visible to league members only.</p>
+          <p className="mt-0.5 text-xs text-slate-500">Banter with fellow managers. Visible to league members only.</p>
         </div>
-        <p role="status" className="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-slate-300">
+        <p role="status" className="flex shrink-0 items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-200">
           <span aria-hidden="true" className={`h-2 w-2 rounded-full ${status.dot}`} />
           {status.text}
         </p>
       </div>
 
       {chat.historyError && (
-        <p role="alert" className="mb-3 rounded-lg border border-rose-800 bg-rose-950/40 px-3 py-2 text-xs text-rose-200">
+        <p role="alert" className="mb-3 rounded-2xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-semibold text-rose-700">
           {chat.historyError}
         </p>
       )}
@@ -86,7 +86,7 @@ export const LeagueChat: React.FC<LeagueChatProps> = ({ leagueId, currentUser })
         }}
         tabIndex={0}
         aria-label="Chat history"
-        className="mb-4 h-80 overflow-y-auto rounded-lg border border-slate-800 bg-slate-950/50 p-3 focus-visible:outline-2 focus-visible:outline-emerald-400 sm:h-96"
+        className="mb-4 h-80 overflow-y-auto rounded-2xl border border-slate-200/80 bg-slate-50/70 p-3.5 focus-visible:outline-2 focus-visible:outline-[#37003c] sm:h-96"
       >
         {chat.hasMore && (
           <div className="mb-3 text-center">
@@ -94,20 +94,20 @@ export const LeagueChat: React.FC<LeagueChatProps> = ({ leagueId, currentUser })
               type="button"
               onClick={chat.loadOlder}
               disabled={chat.isLoadingOlder}
-              className="min-h-9 rounded-lg border border-slate-700 px-3 text-xs font-semibold text-slate-300 hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-emerald-400 disabled:opacity-50"
+              className="min-h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-xs focus-visible:outline-2 focus-visible:outline-[#37003c] disabled:opacity-50"
             >
               {chat.isLoadingOlder ? "Loading…" : "Load earlier messages"}
             </button>
           </div>
         )}
         {chat.messages.length === 0 ? (
-          <p className="py-16 text-center text-sm text-slate-400">No messages yet. Get the banter started!</p>
+          <p className="py-16 text-center text-xs text-slate-400 font-medium">No messages yet. Get the banter started!</p>
         ) : (
           <ChatMessageList messages={chat.messages} currentUserId={currentUser.id} onRetry={chat.retry} />
         )}
       </div>
 
-      {chat.unavailableReason && <p className="mb-2 text-xs text-amber-200">{chat.unavailableReason}</p>}
+      {chat.unavailableReason && <p className="mb-2 text-xs font-medium text-amber-700 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200">{chat.unavailableReason}</p>}
 
       <ChatComposer
         onSend={chat.send}

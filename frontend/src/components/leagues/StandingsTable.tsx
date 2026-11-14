@@ -78,19 +78,19 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
     switch (rank) {
       case 1:
         return (
-          <span className="w-6 h-6 rounded-full bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center font-mono shadow-md shadow-amber-950/40">
+          <span className="w-6 h-6 rounded-full bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center font-mono shadow-xs">
             1
           </span>
         );
       case 2:
         return (
-          <span className="w-6 h-6 rounded-full bg-slate-300 text-slate-950 font-black text-xs flex items-center justify-center font-mono shadow-md shadow-slate-950/40">
+          <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-800 font-black text-xs flex items-center justify-center font-mono shadow-xs">
             2
           </span>
         );
       case 3:
         return (
-          <span className="w-6 h-6 rounded-full bg-amber-700 text-amber-100 font-black text-xs flex items-center justify-center font-mono shadow-md">
+          <span className="w-6 h-6 rounded-full bg-amber-600/20 text-amber-800 border border-amber-300 font-black text-xs flex items-center justify-center font-mono">
             3
           </span>
         );
@@ -115,7 +115,7 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
     <div className="w-full overflow-x-auto">
       <table className="w-full text-left border-collapse text-xs">
         <thead>
-          <tr className="border-b border-pitch-border text-slate-400 uppercase font-semibold text-[11px] bg-slate-950/50">
+          <tr className="border-b border-slate-200 text-slate-500 uppercase font-bold text-[10px] bg-slate-50 tracking-wider">
             <th className="py-3 px-3 w-12 text-center">Rank</th>
             <th className="py-3 px-3">Manager &amp; Squad</th>
             <th className="py-3 px-3">Escrow Status</th>
@@ -125,7 +125,7 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
             {prizePool > 0 && <th className="py-3 px-3 text-right">Projected USDC</th>}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-800/60 font-medium">
+        <tbody className="divide-y divide-slate-100 font-medium">
           {standings.map((entry) => {
             const isMe = currentUserId && entry.userId === currentUserId;
             const prize = getProjectedPrize(entry.rank);
@@ -147,18 +147,18 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
                 tabIndex={onSelectEntry ? 0 : undefined}
                 className={`transition-colors ${onSelectEntry ? "cursor-pointer" : ""} ${
                   isMe
-                    ? "bg-emerald-500/10 hover:bg-emerald-500/15"
-                    : "hover:bg-slate-900/40"
+                    ? "bg-purple-50/70 hover:bg-purple-50"
+                    : "hover:bg-slate-50"
                 }`}
               >
                 {/* Rank */}
-                <td className="py-3 px-3 text-center">
+                <td className="py-3.5 px-3 text-center">
                   <div className="flex items-center justify-center gap-1">
                     {getRankBadge(entry.rank)}
                     {change !== 0 && (
                       <span
                         className={`flex items-center text-[10px] font-bold font-mono ${
-                          change > 0 ? "text-emerald-400" : "text-rose-400"
+                          change > 0 ? "text-emerald-600" : "text-rose-500"
                         }`}
                         title={`${change > 0 ? "Up" : "Down"} ${Math.abs(change)}`}
                       >
@@ -174,39 +174,39 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
                 </td>
 
                 {/* Manager & Squad */}
-                <td className="py-3 px-3">
+                <td className="py-3.5 px-3">
                   <div className="flex items-center gap-2">
-                    <span className={`font-bold text-sm ${isMe ? "text-emerald-400" : "text-white"}`}>
+                    <span className={`font-black text-xs sm:text-sm tracking-tight ${isMe ? "text-[#37003c]" : "text-slate-900"}`}>
                       {entry.squadName || "Fantasy Squad"}
                     </span>
                     {teamVisibility === "PRIVATE" && !isMe && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700 font-semibold" title="Squad selections hidden in Private Team League">
-                        <IconLock className="w-2.5 h-2.5 text-purple-400" />
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200/80 font-bold" title="Squad selections hidden in Private Team League">
+                        <IconLock className="w-2.5 h-2.5 text-purple-600" />
                         <span>Private</span>
                       </span>
                     )}
                     {isMe && (
-                      <span className="text-[10px] uppercase font-bold tracking-wide text-emerald-400/80">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-purple-800 bg-purple-100/70 px-2 py-0.5 rounded-full">
                         You
                       </span>
                     )}
                   </div>
-                  <div className="text-[11px] text-slate-400 font-sans">
-                    Manager: <span className="font-semibold text-slate-300">@{entry.username}</span>
+                  <div className="text-[11px] text-slate-500 font-sans mt-0.5">
+                    Manager: <span className="font-semibold text-slate-700">@{entry.username}</span>
                   </div>
                 </td>
 
                 {/* Escrow Status */}
-                <td className="py-3 px-3">
+                <td className="py-3.5 px-3">
                   {entryFee === 0 ? (
-                    <span className="text-xs text-slate-500">Free league</span>
+                    <span className="text-xs text-slate-400 font-medium">Free league</span>
                   ) : entry.membershipStatus === MembershipStatus.ACTIVE ? (
-                    <Badge variant="success" className="gap-1">
+                    <Badge variant="success" className="gap-1 font-bold">
                       <IconCheck className="w-3 h-3" />
                       <span>Confirmed</span>
                     </Badge>
                   ) : (
-                    <Badge variant="warning" className="gap-1">
+                    <Badge variant="warning" className="gap-1 font-bold">
                       <IconAlertCircle className="w-3 h-3" />
                       <span>Pending Fee</span>
                     </Badge>
@@ -214,34 +214,34 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
                 </td>
 
                 {/* Best GW */}
-                <td className="py-3 px-3 text-center font-mono text-slate-300">
+                <td className="py-3.5 px-3 text-center font-mono text-xs font-semibold text-slate-600">
                   {entry.bestGameweekPoints ?? "—"} pts
                 </td>
 
                 {/* Live Gameweek Points */}
                 {livePoints && (
-                  <td className="py-3 px-3 text-right font-mono font-bold text-emerald-400 tabular-nums">
+                  <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-700 tabular-nums text-xs">
                     {livePoints[entry.userId] ?? 0}
                   </td>
                 )}
 
                 {/* Total Points */}
-                <td className="py-3 px-3 text-right">
-                  <span className="font-mono font-black text-sm text-white">
+                <td className="py-3.5 px-3 text-right">
+                  <span className="font-mono font-black text-sm text-slate-900">
                     {entry.totalPoints}
                   </span>
-                  <span className="text-[10px] text-slate-500 ml-1">pts</span>
+                  <span className="text-[10px] font-medium text-slate-400 ml-1">pts</span>
                 </td>
 
                 {/* Projected Prize */}
                 {prizePool > 0 && (
-                  <td className="py-3 px-3 text-right">
+                  <td className="py-3.5 px-3 text-right">
                     {prize ? (
-                      <span className="font-mono font-black text-amber-400 text-sm">
+                      <span className="font-mono font-black text-amber-600 text-sm">
                         {prize}
                       </span>
                     ) : (
-                      <span className="text-slate-600 font-mono">—</span>
+                      <span className="text-slate-300 font-mono">—</span>
                     )}
                   </td>
                 )}

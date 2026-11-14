@@ -319,24 +319,24 @@ export default function LeagueDetailPage({
   if (isLoading) {
     return (
       <div className="py-24 text-center text-slate-400">
-        <div className="inline-block w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3" />
-        <p className="text-xs">Loading competition standings & escrow state...</p>
+        <div className="inline-block w-8 h-8 border-2 border-[#37003c] border-t-transparent rounded-full animate-spin mb-3" />
+        <p className="text-xs font-medium text-slate-500">Loading competition standings & escrow state...</p>
       </div>
     );
   }
 
   if (!league) {
     return (
-      <div className="py-20 text-center space-y-4">
-        <div className="w-12 h-12 rounded-2xl bg-red-950/40 text-red-400 flex items-center justify-center mx-auto border border-red-500/30">
+      <div className="py-20 text-center space-y-4 bg-white border border-slate-200/80 rounded-3xl p-8 max-w-lg mx-auto shadow-sm">
+        <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center mx-auto border border-rose-200">
           <IconAlertCircle className="w-6 h-6" />
         </div>
-        <h2 className="text-lg font-bold text-white">League Not Found</h2>
-        <p className="text-xs text-slate-400 max-w-sm mx-auto">
+        <h2 className="text-lg font-black text-slate-900 tracking-tight">League Not Found</h2>
+        <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
           The competition requested does not exist or may have been deleted.
         </p>
         <Link href="/leagues">
-          <Button variant="primary" size="md">
+          <Button variant="primary" size="md" className="font-bold text-xs bg-[#37003c] text-white hover:bg-[#28002c] rounded-xl shadow-sm">
             Return to Leagues
           </Button>
         </Link>
@@ -350,7 +350,7 @@ export default function LeagueDetailPage({
       <div>
         <Link
           href="/leagues"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 font-semibold transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-[#37003c] font-bold transition-colors"
         >
           <IconChevronLeft className="w-4 h-4" />
           <span>Back to All Leagues</span>
@@ -358,41 +358,41 @@ export default function LeagueDetailPage({
       </div>
 
       {/* League Header Card */}
-      <div className="bg-pitch-surface border border-pitch-border rounded-xl p-6 shadow-lg space-y-6">
+      <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-2">
               <LeagueStatusBadge status={league.status} />
               {league.teamVisibility === "PRIVATE" && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-300 bg-purple-950/80 border border-purple-800/80 px-2 py-0.5 rounded-full">
-                  <IconLock className="w-3 h-3 text-purple-400" />
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-800 bg-purple-50 border border-purple-200 px-2.5 py-0.5 rounded-full">
+                  <IconLock className="w-3 h-3 text-purple-700" />
                   <span>Private Team Mode</span>
                 </span>
               )}
               {league.isPrivate && (
-                <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-full">
                   <IconShield className="w-3 h-3" />
                   <span>Private</span>
                 </span>
               )}
-              <span className="text-xs font-mono text-slate-400">
+              <span className="text-xs font-mono font-bold text-slate-400">
                 GW {league.startGameweekId} &rarr; GW {league.endGameweekId}
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               {league.name}
             </h1>
-            <p className="text-xs text-slate-400 mt-1 max-w-xl">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl leading-relaxed">
               {league.description || "Official FantasyXI Competition."}
             </p>
           </div>
 
-          {/* Invite Code Widget (private league codes are only returned to the creator) */}
+          {/* Invite Code Widget */}
           {league.inviteCode && (
-            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 self-start md:self-auto">
+            <div className="flex items-center gap-3 p-3 rounded-2xl bg-purple-50/60 border border-purple-100 self-start md:self-auto">
               <div>
-                <div className="text-[10px] uppercase font-semibold text-slate-500">Invite Code</div>
-                <div className="font-mono font-bold text-white tracking-widest text-sm">
+                <div className="text-[10px] uppercase font-bold text-purple-900/70">Invite Code</div>
+                <div className="font-mono font-black text-[#37003c] tracking-widest text-sm">
                   {league.inviteCode}
                 </div>
               </div>
@@ -402,47 +402,47 @@ export default function LeagueDetailPage({
         </div>
 
         {/* 4 Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-800/80 font-mono">
-          <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-            <span className="text-[10px] text-slate-500 uppercase font-sans font-semibold">Entry Fee</span>
-            <div className="text-lg font-black text-white mt-0.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-slate-100 font-mono">
+          <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+            <span className="text-[10px] text-slate-400 uppercase font-sans font-bold">Entry Fee</span>
+            <div className="text-lg font-black text-slate-900 mt-0.5">
               {league.entryFee > 0 ? `${league.entryFee} USDC` : "Free"}
             </div>
           </div>
 
-          <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-            <span className="text-[10px] text-slate-500 uppercase font-sans font-semibold">Prize Pool</span>
-            <div className="text-lg font-black text-amber-400 mt-0.5">
+          <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+            <span className="text-[10px] text-slate-400 uppercase font-sans font-bold">Prize Pool</span>
+            <div className="text-lg font-black text-amber-600 mt-0.5">
               ${league.prizePool || 0} USDC
             </div>
           </div>
 
-          <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-            <span className="text-[10px] text-slate-500 uppercase font-sans font-semibold">Participants</span>
-            <div className="text-lg font-bold text-slate-200 mt-0.5">
+          <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+            <span className="text-[10px] text-slate-400 uppercase font-sans font-bold">Participants</span>
+            <div className="text-lg font-black text-slate-800 mt-0.5">
               {league.currentMembers} / {league.maxMembers}
             </div>
           </div>
 
-          <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-            <span className="text-[10px] text-slate-500 uppercase font-sans font-semibold">Escrow</span>
-            <div className="text-sm font-bold text-emerald-400 mt-1 flex items-center gap-1">
-              <IconShield className="w-3.5 h-3.5" />
-              <span>Soroban Active</span>
+          <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+            <span className="text-[10px] text-slate-400 uppercase font-sans font-bold">Escrow Verification</span>
+            <div className="text-sm font-bold text-emerald-700 mt-1 flex items-center gap-1.5 font-sans">
+              <IconShield className="w-4 h-4 text-emerald-600" />
+              <span>Smart Escrow</span>
             </div>
           </div>
         </div>
 
         {/* User Status / Action Bar */}
-        <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             {!isAuthenticated ? (
-              <span className="text-xs text-slate-400">
-                Sign in to join this competition with your squad.
+              <span className="text-xs text-slate-500 font-medium">
+                Sign in to join this competition with your fantasy squad.
               </span>
             ) : isMember ? (
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-300">Your Status:</span>
+                <span className="text-xs font-bold text-slate-700">Your Status:</span>
                 {hasPaid ? (
                   <Badge variant="success" className="gap-1 font-bold">
                     <IconCheck className="w-3.5 h-3.5" />
@@ -456,17 +456,17 @@ export default function LeagueDetailPage({
                 )}
               </div>
             ) : league.isPrivate ? (
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-500 font-medium">
                 This is a private league. Ask the creator for an invitation link to join.
               </span>
             ) : (
               <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold text-slate-300">Enter with Squad:</span>
+                <span className="text-xs font-bold text-slate-700">Enter with Squad:</span>
                 {userSquads.length > 0 ? (
                   <select
                     value={selectedSquadId}
                     onChange={(e) => setSelectedSquadId(e.target.value)}
-                    className="px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-emerald-500"
+                    className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs font-medium focus:outline-none focus:border-[#37003c]"
                   >
                     {userSquads.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -475,7 +475,7 @@ export default function LeagueDetailPage({
                     ))}
                   </select>
                 ) : (
-                  <Link href="/team" className="text-xs text-emerald-400 underline font-bold">
+                  <Link href="/team" className="text-xs text-emerald-700 hover:underline font-bold">
                     Create a squad first &rarr;
                   </Link>
                 )}
@@ -486,7 +486,7 @@ export default function LeagueDetailPage({
           <div className="flex items-center gap-2">
             {!isAuthenticated ? (
               <Link href={`/login?returnTo=/leagues/${leagueId}`}>
-                <Button variant="primary" size="md" className="uppercase font-bold tracking-wide text-xs">
+                <Button variant="primary" size="md" className="font-bold tracking-wide text-xs bg-[#37003c] text-white hover:bg-[#28002c] rounded-xl shadow-sm">
                   Sign In to Join
                 </Button>
               </Link>
@@ -496,7 +496,7 @@ export default function LeagueDetailPage({
                 variant="primary"
                 size="md"
                 onClick={() => setShowPaymentModal(true)}
-                className="uppercase font-bold tracking-wide text-xs bg-amber-500 hover:bg-amber-400 text-slate-950"
+                className="font-bold tracking-wide text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl shadow-sm"
               >
                 Pay {league.entryFee} USDC Entry Fee
               </Button>
@@ -508,7 +508,7 @@ export default function LeagueDetailPage({
                 disabled={isJoining || userSquads.length === 0}
                 isLoading={isJoining}
                 onClick={handleJoinLeague}
-                className="uppercase font-bold tracking-wide text-xs"
+                className="font-bold tracking-wide text-xs bg-[#37003c] text-white hover:bg-[#28002c] rounded-xl shadow-sm"
               >
                 Join League
               </Button>
@@ -518,9 +518,9 @@ export default function LeagueDetailPage({
       </div>
 
       {errorMessage && (
-        <div className="p-3.5 rounded-lg bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5 animate-shake">
-          <IconAlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
-          <span className="font-medium">{errorMessage}</span>
+        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2.5 animate-shake">
+          <IconAlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+          <span className="font-bold">{errorMessage}</span>
         </div>
       )}
 
@@ -536,22 +536,22 @@ export default function LeagueDetailPage({
       {/* Main Grid: Standings + Prize Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left 2 Cols: Standings Table */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="bg-pitch-surface border border-pitch-border rounded-xl p-5 shadow-md">
-            <div className="flex items-center justify-between mb-4">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-7 shadow-sm">
+            <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-lg font-bold text-white uppercase tracking-tight flex items-center gap-2">
-                  <IconTrophy className="w-5 h-5 text-amber-400" />
+                <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <IconTrophy className="w-5 h-5 text-amber-500" />
                   <span>League Standings</span>
                 </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   {livePoints
-                    ? "Live leaderboard · click a manager to see their live squad"
+                    ? "Live leaderboard · click a manager to inspect their lineup"
                     : "Leaderboard updated after each gameweek resolution"}
                 </p>
               </div>
 
-              <div className="text-xs font-mono text-slate-400">
+              <div className="text-xs font-mono font-bold text-slate-400 bg-slate-50 px-3 py-1 rounded-xl border border-slate-200/60">
                 {standings.length} Teams
               </div>
             </div>
@@ -621,21 +621,21 @@ export default function LeagueDetailPage({
           <PrizeCalculator entryFee={league.entryFee} participants={league.currentMembers || league.maxMembers} />
 
           {league.entryFee > 0 && (
-            <div className="bg-pitch-surface border border-pitch-border rounded-xl p-5 shadow-md space-y-4">
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-bold text-white uppercase tracking-wider text-[11px] flex items-center gap-2">
-                    <IconShield className="w-4 h-4 text-emerald-400" />
-                    On-chain escrow audit
+                  <h3 className="font-bold text-slate-900 uppercase tracking-wider text-[11px] flex items-center gap-2">
+                    <IconShield className="w-4 h-4 text-emerald-600" />
+                    <span>On-chain escrow audit</span>
                   </h3>
-                  <p className="text-[11px] text-slate-500 mt-1">Soroban RPC · get_league</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Soroban RPC · get_league</p>
                 </div>
-                <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded border ${
+                <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border ${
                   onChainLeague &&
                   onChainLeague.totalDeposited >= league.entryFee * league.currentMembers &&
                   onChainLeague.participantCount >= league.currentMembers
-                    ? "text-emerald-300 bg-emerald-500/10 border-emerald-500/30"
-                    : "text-amber-300 bg-amber-500/10 border-amber-500/30"
+                    ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                    : "text-amber-700 bg-amber-50 border-amber-200"
                 }`}>
                   {onChainLeague ? `${Math.min(100, Math.round((onChainLeague.totalDeposited / Math.max(league.entryFee * league.currentMembers, 1)) * 100))}% solvent` : "Checking"}
                 </span>
@@ -643,35 +643,35 @@ export default function LeagueDetailPage({
 
               {onChainLeague ? (
                 <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                  <div className="rounded-lg bg-slate-950/60 border border-slate-800 p-2.5">
-                    <div className="text-[10px] text-slate-500 uppercase font-sans">On-chain deposits</div>
-                    <div className="text-white font-bold mt-1">{onChainLeague.totalDeposited.toFixed(2)} USDC</div>
+                  <div className="rounded-2xl bg-slate-50 border border-slate-200/70 p-3">
+                    <div className="text-[10px] text-slate-400 uppercase font-sans font-bold">On-chain deposits</div>
+                    <div className="text-slate-900 font-black mt-0.5">{onChainLeague.totalDeposited.toFixed(2)} USDC</div>
                   </div>
-                  <div className="rounded-lg bg-slate-950/60 border border-slate-800 p-2.5">
-                    <div className="text-[10px] text-slate-500 uppercase font-sans">Participants</div>
-                    <div className="text-white font-bold mt-1">{onChainLeague.participantCount} / {league.currentMembers}</div>
+                  <div className="rounded-2xl bg-slate-50 border border-slate-200/70 p-3">
+                    <div className="text-[10px] text-slate-400 uppercase font-sans font-bold">Participants</div>
+                    <div className="text-slate-900 font-black mt-0.5">{onChainLeague.participantCount} / {league.currentMembers}</div>
                   </div>
-                  <div className="col-span-2 flex items-center justify-between text-[11px] text-slate-400">
+                  <div className="col-span-2 flex items-center justify-between text-[11px] text-slate-500 pt-1">
                     <span>Contract status</span>
-                    <span className="text-emerald-400 font-semibold uppercase">{onChainLeague.status}</span>
+                    <span className="text-emerald-700 font-bold uppercase">{onChainLeague.status}</span>
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-slate-500">{auditError || "Reading escrow state..."}</p>
+                <p className="text-xs text-slate-400">{auditError || "Reading escrow state..."}</p>
               )}
 
-              <div className="flex flex-wrap gap-x-3 gap-y-2 text-[11px] font-semibold">
-                <a href={`${stellarExpertBase}/contract/${escrowContractId}`} target="_blank" rel="noreferrer" className="text-emerald-400 hover:text-emerald-300 underline">Escrow contract</a>
-                {usdcAssetContract && <a href={`${stellarExpertBase}/contract/${usdcAssetContract}`} target="_blank" rel="noreferrer" className="text-emerald-400 hover:text-emerald-300 underline">USDC asset</a>}
-                {depositEvidence && <a href={`${stellarExpertBase}/tx/${depositEvidence.txHash}`} target="_blank" rel="noreferrer" className="text-emerald-400 hover:text-emerald-300 underline">Your deposit tx</a>}
-                {depositEvidence?.ledgerSeq && <a href={`${stellarExpertBase}/ledger/${depositEvidence.ledgerSeq}`} target="_blank" rel="noreferrer" className="text-emerald-400 hover:text-emerald-300 underline">Ledger #{depositEvidence.ledgerSeq}</a>}
+              <div className="flex flex-wrap gap-x-3 gap-y-2 text-[11px] font-bold pt-1 border-t border-slate-100">
+                <a href={`${stellarExpertBase}/contract/${escrowContractId}`} target="_blank" rel="noreferrer" className="text-purple-900 hover:text-purple-700 underline">Escrow contract</a>
+                {usdcAssetContract && <a href={`${stellarExpertBase}/contract/${usdcAssetContract}`} target="_blank" rel="noreferrer" className="text-purple-900 hover:text-purple-700 underline">USDC asset</a>}
+                {depositEvidence && <a href={`${stellarExpertBase}/tx/${depositEvidence.txHash}`} target="_blank" rel="noreferrer" className="text-purple-900 hover:text-purple-700 underline">Your deposit tx</a>}
+                {depositEvidence?.ledgerSeq && <a href={`${stellarExpertBase}/ledger/${depositEvidence.ledgerSeq}`} target="_blank" rel="noreferrer" className="text-purple-900 hover:text-purple-700 underline">Ledger #{depositEvidence.ledgerSeq}</a>}
               </div>
             </div>
           )}
 
-          <div className="bg-pitch-surface border border-pitch-border rounded-xl p-5 shadow-md space-y-3 text-xs text-slate-400">
-            <h3 className="font-bold text-white uppercase tracking-wider text-[11px] flex items-center gap-2">
-              <IconShield className="w-4 h-4 text-emerald-400" />
+          <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-3 text-xs text-slate-500">
+            <h3 className="font-bold text-slate-900 uppercase tracking-wider text-[11px] flex items-center gap-2">
+              <IconShield className="w-4 h-4 text-emerald-600" />
               <span>Smart Escrow Settlement</span>
             </h3>
             <ul className="space-y-2 leading-relaxed">

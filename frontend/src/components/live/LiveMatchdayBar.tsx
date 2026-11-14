@@ -40,17 +40,17 @@ export const LiveMatchdayBar: React.FC<LiveMatchdayBarProps> = ({
   const isLive = connection === "live";
 
   return (
-    <div className="bg-pitch-surface border border-pitch-border rounded-xl p-4 shadow-md space-y-3">
+    <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-sm space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span
-            className={`w-2 h-2 rounded-full ${isLive ? "bg-rose-500 animate-pulse" : "bg-slate-500"}`}
+            className={`w-2.5 h-2.5 rounded-full ${isLive ? "bg-rose-500 animate-pulse" : "bg-slate-400"}`}
           />
-          <h2 className="text-sm font-bold text-white uppercase tracking-wide">
+          <h2 className="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wide">
             Live {snapshot?.gameweek ? `· ${snapshot.gameweek.name}` : "Matchday"}
           </h2>
         </div>
-        <span className="text-[10px] uppercase font-semibold text-slate-500">
+        <span className="text-[10px] uppercase font-bold text-slate-500 bg-slate-50 px-2.5 py-0.5 rounded-full border border-slate-200">
           {connection === "live" ? "Streaming" : connection === "reconnecting" ? "Reconnecting..." : "Connecting..."}
         </span>
       </div>
@@ -63,11 +63,11 @@ export const LiveMatchdayBar: React.FC<LiveMatchdayBarProps> = ({
             return (
               <div
                 key={f.id}
-                className={`flex-shrink-0 px-3 py-2 rounded-lg border text-xs font-mono ${
-                  inPlay ? "border-rose-500/40 bg-rose-500/5" : "border-slate-800 bg-slate-950/60"
+                className={`flex-shrink-0 px-3 py-2 rounded-2xl border text-xs font-mono ${
+                  inPlay ? "border-rose-300 bg-rose-50/70" : "border-slate-200/80 bg-slate-50/80"
                 }`}
               >
-                <div className="flex items-center gap-2 text-white font-bold">
+                <div className="flex items-center gap-2 text-slate-900 font-bold">
                   <span>{f.homeTeam}</span>
                   <span className="tabular-nums">
                     {f.started ? `${f.homeScore ?? 0} - ${f.awayScore ?? 0}` : "v"}
