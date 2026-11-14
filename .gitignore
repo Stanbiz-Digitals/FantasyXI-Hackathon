@@ -31,3 +31,7 @@ prisma/migrations/**/migration_lock.toml
 
 .agents/
 contracts/target/
+# Temporary research clones
+cicero-repo/
+zingolib/
+
