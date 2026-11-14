@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { FantasyXILogo } from "@/components/ui/FantasyXILogo";
+import { CiceroConnectButton } from "@cicero-zcash/react";
 import {
   IconFootball,
   IconTrophy,
@@ -42,9 +43,22 @@ export const Sidebar: React.FC = () => {
     <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200/80 p-5 shrink-0 select-none justify-between h-screen sticky top-0 shadow-sm z-30">
       <div className="flex flex-col gap-6">
         {/* Brand Logo */}
-        <Link href="/" className="px-2 py-1 group">
-          <FantasyXILogo size={38} showText={true} variant="light" />
-        </Link>
+        <div className="flex items-center justify-between px-2 py-1">
+          <Link href="/" className="group">
+            <FantasyXILogo size={38} showText={true} variant="light" />
+          </Link>
+        </div>
+
+        {/* Zcash Shielded Wallet Quick-Connect (Cicero) */}
+        <div className="px-2 py-2 rounded-xl bg-purple-50/80 border border-purple-200/80 flex flex-col gap-1.5">
+          <div className="flex items-center justify-between text-[11px] font-bold text-purple-900 uppercase tracking-wider">
+            <span>Zcash Wallet</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-200/80 text-purple-800 font-mono">Testnet</span>
+          </div>
+          <div className="cicero-sidebar-wrapper">
+            <CiceroConnectButton />
+          </div>
+        </div>
 
         {/* Navigation Links */}
         <nav className="space-y-1.5" aria-label="Main Navigation">
