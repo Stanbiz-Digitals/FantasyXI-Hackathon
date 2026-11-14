@@ -159,7 +159,7 @@ export class FplSyncService {
 
     if (teamOps.length > 0) {
       console.log(`Executing ${teamOps.length} team updates...`);
-      await this.db.$transaction(teamOps);
+      await this.db.$transaction(teamOps, { timeout: 30000 });
     }
 
     // Fetch all teams again to build the map for players
@@ -214,7 +214,7 @@ export class FplSyncService {
 
     if (gwOps.length > 0) {
       console.log(`Executing ${gwOps.length} gameweek updates...`);
-      await this.db.$transaction(gwOps);
+      await this.db.$transaction(gwOps, { timeout: 30000 });
     }
 
     const syncedGameweeks = await this.db.gameweek.findMany();
@@ -313,9 +313,9 @@ export class FplSyncService {
         );
         playersCount++;
 
-        // Batch execution for Players (chunk of 100)
-        if (playerOps.length >= 100) {
-          await this.db.$transaction(playerOps);
+        // Batch execution for Players (chunk of 25 for safe cloud DB pool limits)
+        if (playerOps.length >= 25) {
+          await this.db.$transaction(playerOps, { timeout: 30000 });
           playerOps.length = 0;
         }
       }
@@ -323,7 +323,7 @@ export class FplSyncService {
 
     // Flush remaining players
     if (playerOps.length > 0) {
-      await this.db.$transaction(playerOps);
+      await this.db.$transaction(playerOps, { timeout: 30000 });
     }
 
     // 4. Detect & dispatch CaptainInjuryAlertEmail notifications prior to deadline
@@ -533,15 +533,15 @@ export class FplSyncService {
         );
         fixturesCount++;
 
-        if (fixtureOps.length >= 100) {
-          await this.db.$transaction(fixtureOps);
+        if (fixtureOps.length >= 25) {
+          await this.db.$transaction(fixtureOps, { timeout: 30000 });
           fixtureOps.length = 0;
         }
       }
     }
 
     if (fixtureOps.length > 0) {
-      await this.db.$transaction(fixtureOps);
+      await this.db.$transaction(fixtureOps, { timeout: 30000 });
     }
 
     console.log(`✅ FPL Fixtures sync complete: ${fixturesCount} fixtures.`);
