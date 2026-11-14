@@ -134,6 +134,27 @@ body {
   text-overflow: ellipsis !important;
 }
 
+/* Modal Focus & Opaque Backdrop Overlay Overrides */
+/* When Cicero Connect or Account Modal opens, ensure the backdrop firmly covers the dashboard */
+div[class*="z-[99999]"] > div[class*="fixed inset-0"][class*="bg-"] {
+  background-color: rgba(15, 23, 42, 0.88) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* Modal dialog container styling to pop crisply over the darkened overlay without text bleed */
+div[class*="z-[100000]"] {
+  background-color: #ffffff !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* Ensure modal contents remain sharp and completely opaque */
+div[class*="z-[100000]"] * {
+  opacity: 1;
+}
+
+.bg-fxi-purple {
   background: linear-gradient(135deg, #37003c 0%, #200028 100%);
 }
 
