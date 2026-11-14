@@ -115,8 +115,25 @@ body {
   box-shadow: 0 4px 12px 0 rgba(55, 0, 60, 0.06);
 }
 
-/* Special Gradients */
-.bg-fxi-purple {
+/* Cicero Wallet Overrides for Perfect Desktop & Mobile Responsiveness */
+.cicero-sidebar-wrapper,
+.cicero-responsive-wrapper {
+  width: 100%;
+}
+
+.cicero-sidebar-wrapper > div,
+.cicero-responsive-wrapper > div {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.cicero-sidebar-wrapper button,
+.cicero-responsive-wrapper button {
+  max-width: 100% !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+
   background: linear-gradient(135deg, #37003c 0%, #200028 100%);
 }
 
