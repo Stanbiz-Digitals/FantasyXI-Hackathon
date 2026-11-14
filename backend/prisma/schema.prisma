@@ -194,6 +194,7 @@ model User {
   refreshTokens        RefreshToken[]
   collusionFlagsAsA    LeagueCollusionFlag[] @relation("FlagAccountA")
   collusionFlagsAsB    LeagueCollusionFlag[] @relation("FlagAccountB")
+  zcashInvoices        ZcashPaymentInvoice[]
   suspensionAppeals    SuspensionAppeal[]
 
   @@map("users")
@@ -462,6 +463,7 @@ model League {
   seasons       LeagueSeason[]
   depositExceptions DepositException[]
   collusionFlags LeagueCollusionFlag[]
+  zcashInvoices ZcashPaymentInvoice[]
 
   @@index([status, isPrivate])
   @@index([entryFee])
@@ -606,6 +608,7 @@ model LeagueMember {
   transactions Transaction[]
   homeFixtures LeagueFixture[] @relation("HomeLeagueFixtures")
   awayFixtures LeagueFixture[] @relation("AwayLeagueFixtures")
+  zcashInvoices ZcashPaymentInvoice[]
 
   @@unique([leagueId, userId])
   @@index([leagueId, joinedAt, id])
@@ -675,10 +678,43 @@ model Transaction {
   user   User          @relation(fields: [userId], references: [id])
   league League?       @relation(fields: [leagueId], references: [id])
   member LeagueMember? @relation(fields: [memberId], references: [id])
+  zcashInvoices ZcashPaymentInvoice[]
 
   // A batched refund shares one Stellar hash across several members
   @@unique([stellarTxHash, memberId])
   @@map("transactions")
+}
+
+/// Tracks shielded Zcash testnet payment invoices for league entry fees.
+/// Enforces unique transaction and output references to prevent duplicate claims.
+model ZcashPaymentInvoice {
+  id                    String            @id @default(uuid())
+  invoiceReference      String            @unique @map("invoice_reference")
+  leagueId              String            @map("league_id")
+  userId                String            @map("user_id")
+  memberId              String?           @map("member_id")
+  transactionId         String?           @map("transaction_id")
+  expectedAmountZat     BigInt            @map("expected_amount_zat")
+  receivingAddress      String            @map("receiving_address")
+  paymentTxid           String?           @map("payment_txid")
+  outputIndex           Int?              @map("output_index")
+  paymentStatus         PaymentStatus     @default(PENDING) @map("payment_status")
+  confirmations         Int               @default(0)
+  memoReceived          String?           @map("memo_received")
+  expiresAt             DateTime          @map("expires_at")
+  verifiedAt            DateTime?         @map("verified_at")
+  createdAt             DateTime          @default(now()) @map("created_at")
+  updatedAt             DateTime          @updatedAt @map("updated_at")
+
+  league                League            @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  member                LeagueMember?     @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  transaction           Transaction?      @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@unique([paymentTxid, outputIndex])
+  @@index([leagueId, paymentStatus])
+  @@index([userId, paymentStatus])
+  @@map("zcash_payment_invoices")
 }
 
 /// Persists the exact signed envelope so a timeout can be reconciled and
