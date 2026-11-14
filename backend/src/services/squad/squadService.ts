@@ -36,6 +36,15 @@ export class SquadForbiddenError extends Error {
   }
 }
 
+export class SquadPrivateTeamError extends Error {
+  constructor(
+    message: string = "This manager's team is private. You can follow their performance on the leaderboard without viewing their squad."
+  ) {
+    super(message);
+    this.name = "SquadPrivateTeamError";
+  }
+}
+
 export class SquadRevisionConflictError extends Error {
   constructor(public readonly currentRevision: Date) {
     super("This squad changed on the server while your offline edits were pending");
@@ -713,8 +722,10 @@ export class SquadService {
 
   /**
    * Retrieves a squad by ID with full player details.
+   * If viewerId is not provided or viewer is not the owner (or admin),
+   * checks if the squad belongs to any Private Team League and enforces privacy.
    */
-  public async getSquad(squadId: string) {
+  public async getSquad(squadId: string, viewerId?: string, userRole?: string) {
     const squad = await prisma.squad.findUnique({
       where: { id: squadId },
       include: {
@@ -730,6 +741,16 @@ export class SquadService {
           include: { gameweek: true },
           orderBy: { gameweekId: "desc" },
         },
+        memberships: {
+          include: {
+            league: {
+              select: {
+                id: true,
+                teamVisibility: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -737,14 +758,31 @@ export class SquadService {
       throw new SquadValidationError(`Squad with ID ${squadId} not found`);
     }
 
-    return squad;
+    const isOwner = viewerId && viewerId === squad.userId;
+    const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
+
+    if (!isOwner && !isAdmin) {
+      const isEnrolledInPrivateLeague = squad.memberships.some(
+        (m: { league?: { teamVisibility?: string } }) => m.league?.teamVisibility === "PRIVATE"
+      );
+      if (isEnrolledInPrivateLeague) {
+        throw new SquadPrivateTeamError();
+      }
+    }
+
+    const { memberships, ...squadData } = squad;
+    return squadData;
   }
 
   /**
    * Retrieves all squads belonging to a user.
+   * If viewerId is not the owner/admin, filters out or blocks private squads.
    */
-  public async getUserSquads(userId: string) {
-    return prisma.squad.findMany({
+  public async getUserSquads(userId: string, viewerId?: string, userRole?: string) {
+    const isOwner = viewerId && viewerId === userId;
+    const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
+
+    const squads = await prisma.squad.findMany({
       where: { userId },
       include: {
         players: {
@@ -755,8 +793,27 @@ export class SquadService {
           },
           orderBy: { positionOrder: "asc" },
         },
+        memberships: {
+          include: {
+            league: {
+              select: {
+                id: true,
+                teamVisibility: true,
+              },
+            },
+          },
+        },
       },
     });
+
+    if (isOwner || isAdmin) {
+      return squads.map(({ memberships, ...s }) => s);
+    }
+
+    // Filter out squads enrolled in private leagues for external viewers
+    return squads
+      .filter((s) => !s.memberships.some((m: { league?: { teamVisibility?: string } }) => m.league?.teamVisibility === "PRIVATE"))
+      .map(({ memberships, ...s }) => s);
   }
 
   /**
@@ -783,7 +840,7 @@ export class SquadService {
    * fluctuations synced by `syncDailyPlayerPrices` without requiring the
    * bank balance itself to be mutated (only transfers change the bank).
    */
-  public async getSquadValuation(squadId: string): Promise<{
+  public async getSquadValuation(squadId: string, viewerId?: string, userRole?: string): Promise<{
     squadId: string;
     bank: number;
     squadValue: number;
@@ -791,11 +848,35 @@ export class SquadService {
   }> {
     const squad = await this.db.squad.findUnique({
       where: { id: squadId },
-      include: { players: { include: { player: true } } },
+      include: {
+        players: { include: { player: true } },
+        memberships: {
+          include: {
+            league: {
+              select: {
+                id: true,
+                teamVisibility: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!squad) {
       throw new SquadValidationError(`Squad with ID ${squadId} not found`);
+    }
+
+    const isOwner = viewerId && viewerId === squad.userId;
+    const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
+
+    if (!isOwner && !isAdmin) {
+      const isEnrolledInPrivateLeague = squad.memberships.some(
+        (m: { league?: { teamVisibility?: string } }) => m.league?.teamVisibility === "PRIVATE"
+      );
+      if (isEnrolledInPrivateLeague) {
+        throw new SquadPrivateTeamError();
+      }
     }
 
     const bank = Number(squad.budgetRemaining);

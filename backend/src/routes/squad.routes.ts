@@ -10,7 +10,7 @@ import {
   cancelChip,
   getSquadValuation,
 } from "../controllers/squad.controller.js";
-import { requireAuth, requirePermission } from "../middleware/authMiddleware.js";
+import { requireAuth, requirePermission, optionalAuth } from "../middleware/authMiddleware.js";
 import { Permission } from "../types/index.js";
 import { squadRateLimiter, mutationRateLimiter } from "../middleware/rateLimiter.js";
 import { idempotency } from "../middleware/idempotency.js";
@@ -31,11 +31,11 @@ router.post(
 // GET /api/v1/squads/me (Protected: returns authenticated user's squads)
 router.get("/me", requireAuth, requirePermission(Permission.SQUAD_READ_OWN), getMySquads);
 
-// GET /api/v1/squads/:id (Public: view any squad)
-router.get("/:id", getSquadById);
+// GET /api/v1/squads/:id (Public / optionalAuth: view squad, protected for private team leagues)
+router.get("/:id", optionalAuth, getSquadById);
 
-// GET /api/v1/squads/:id/value (Public: bank, squad and total team value using live FPL prices)
-router.get("/:id/value", getSquadValuation);
+// GET /api/v1/squads/:id/value (Public / optionalAuth: bank, squad and total team value)
+router.get("/:id/value", optionalAuth, getSquadValuation);
 
 // PUT /api/v1/squads/:id (Protected: update user's own squad)
 router.put(
@@ -69,8 +69,8 @@ router.post(
   cancelChip
 );
 
-// GET /api/v1/squads/user/:userId (Public: view squads by user ID)
-router.get("/user/:userId", getUserSquads);
+// GET /api/v1/squads/user/:userId (Public / optionalAuth: view squads by user ID, private squads filtered)
+router.get("/user/:userId", optionalAuth, getUserSquads);
 
 // POST /api/v1/squads/:id/calculate-score/:gameweekId
 // (Operations: persisted scores feed standings, so only ADMIN / SERVICE may trigger it)

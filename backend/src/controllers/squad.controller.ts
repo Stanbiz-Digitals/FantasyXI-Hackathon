@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import {
   squadService,
   SquadForbiddenError,
+  SquadPrivateTeamError,
   SquadRevisionConflictError,
   ChipUnavailableError,
   ChipCancellationLockedError,
@@ -70,12 +71,19 @@ export async function getSquadById(
 ): Promise<void> {
   try {
     const { id } = req.params;
-    const squad = await squadService.getSquad(id as string);
+    const squad = await squadService.getSquad(id as string, req.user?.id, req.user?.role);
     res.json({
       success: true,
       data: squad,
     });
   } catch (error) {
+    if (error instanceof SquadPrivateTeamError) {
+      res.status(403).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
     if (error instanceof SquadValidationError) {
       res.status(404).json({
         success: false,
@@ -193,7 +201,7 @@ export async function getUserSquads(
 ): Promise<void> {
   try {
     const { userId } = req.params;
-    const squads = await squadService.getUserSquads(userId as string);
+    const squads = await squadService.getUserSquads(userId as string, req.user?.id, req.user?.role);
     res.json({
       success: true,
       data: squads,
@@ -210,12 +218,19 @@ export async function getSquadValuation(
 ): Promise<void> {
   try {
     const { id } = req.params;
-    const valuation = await squadService.getSquadValuation(id as string);
+    const valuation = await squadService.getSquadValuation(id as string, req.user?.id, req.user?.role);
     res.json({
       success: true,
       data: valuation,
     });
   } catch (error) {
+    if (error instanceof SquadPrivateTeamError) {
+      res.status(403).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
     if (error instanceof SquadValidationError) {
       res.status(404).json({
         success: false,
